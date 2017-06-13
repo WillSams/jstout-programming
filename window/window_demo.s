@@ -47,6 +47,20 @@ VRAM_ADDRESS:	.res 2
 DRAW_WIDTH:	.res 1
 DRAW_HEIGHT:	.res 1
 TEMP:		.res 3
+X_DRAW:		.res 1
+
+ANIMATION:	.res 2
+SPRITE_ANIMATION:	.res 1
+SPRITE_FRAME_SUB:	.res 1
+SPRITE_FRAME:		.res 1
+SPRITE_Y:		.res 1
+SPRITE_X_SUB:		.res 1
+SPRITE_X_LO:		.res 1
+SPRITE_X_HI:		.res 1
+SPRITE_X_DELTA:		.res 2
+SPRITE_ATTRIBUTE:	.res 1
+
+OAM_USED:	.res 1
 
 ;===============================================================================
 .segment "SPRITE"
@@ -111,12 +125,309 @@ Reset:
 	LDA #%00011110		; Display BG and Objects
 	STA SOFT_2001
 	CLI			; Enable IRQs
+	JSR setMario
 	JSR fade_in		; Fade Screen to Full Color
 game_loop:
+:	LDA DRAW_FLAG		; Wait for Previous Draw
+	BNE :-
+	LDA XSCROLL+0
+	AND #%00011111
+	STA X_DRAW
+	JSR move_mario
 	JSR scroll_check
+	LDA #$04
+	STA OAM_USED
+	JSR clear_sprite
+	JSR animation
 	LDA #TRUE
 	STA DRAW_FLAG
 	JMP game_loop
+
+setMario:
+	LDA #$00
+	STA SPRITE_ANIMATION
+	LDA MARIO+0
+	STA SPRITE_Y
+	LDA MARIO+3
+	STA SPRITE_X_LO
+	LDA #$00
+	STA SPRITE_X_HI
+	LDA #$00
+	STA SPRITE_ATTRIBUTE
+	RTS
+
+move_mario:
+@left:
+	LDA JOYRAW1		; Left Button?
+	AND #LEFT_BUTTON
+	BEQ @right
+	LDA SPRITE_X_DELTA+1	; Leftward Velocity?
+	BMI @leftwalk
+	LDA SPRITE_X_DELTA+0	; No Velocity?
+	BNE @leftbrake
+	LDA SPRITE_X_DELTA+1
+	BEQ @leftwalk
+@leftbrake:
+	JSR brakeleft		; Brake the Walk Right
+	JMP @frame
+@leftwalk:
+	JSR walkleft		; Walk Left
+	JMP @frame
+@right:
+	LDA JOYRAW1		; Right Button?
+	AND #RIGHT_BUTTON
+	BEQ @none
+	LDA SPRITE_X_DELTA+1	; Rightward/No Velocity?
+	BPL @rightwalk
+@rightbrake:
+	JSR brakeright		; Brake the Walk Left
+	JMP @frame
+@rightwalk:
+	JSR walkright		; Walk Right
+	JMP @frame
+@none:
+	JSR brake		; Decelerate Walk
+@frame:
+	LDA SPRITE_X_DELTA+1	; Velocity Direction?
+	BPL @forward
+@backward:
+	LDA #$00		; Get Absolute Velocity
+	SEC
+	SBC SPRITE_X_DELTA+0
+	STA TEMP+2
+	LDA #$00
+	SBC SPRITE_X_DELTA+1
+	LSR
+	LDA TEMP+2
+	JMP @doframe
+@forward:
+	LDA SPRITE_X_DELTA+1
+	LSR
+	LDA SPRITE_X_DELTA+0
+@doframe:
+	ROR			; Velocity * 5/16 + Previous Frame = Current Frame
+	LSR
+	STA TEMP+2
+	LSR
+	LSR
+	ADC TEMP+2
+	ADC SPRITE_FRAME_SUB
+	STA SPRITE_FRAME_SUB
+	LDA SPRITE_FRAME
+	ADC #$00
+	STA SPRITE_FRAME
+	RTS
+
+walkleft:
+	LDA SPRITE_ANIMATION	; Walking?
+	CMP #$01
+	BEQ @walk
+	JSR setWalking
+	LDA SPRITE_ATTRIBUTE	; Set Horizontal Flip Bit to Left
+	ORA #$40
+	STA SPRITE_ATTRIBUTE
+@walk:
+	LDA SPRITE_X_LO		; Move Left?
+	CMP #<$0004
+	LDA SPRITE_X_HI
+	SBC #>$0004
+	BCC @done
+	LDA SPRITE_X_DELTA+0	; Accelerate to the Left
+	SEC
+	SBC #<$000E		; Acceleration Lo
+	STA SPRITE_X_DELTA+0
+	LDA SPRITE_X_DELTA+1
+	SBC #>$000E		; Acceleration Hi
+	STA SPRITE_X_DELTA+1
+	LDA SPRITE_X_DELTA+0	; Reached Max Speed?
+	CMP #<$FEB4
+	LDA SPRITE_X_DELTA+1
+	SBC #>$FEB4
+	BCS @move
+	LDA #<$FEB4		; Set to Max Speed
+	STA SPRITE_X_DELTA+0
+	LDA #>$FEB4
+	STA SPRITE_X_DELTA+1
+@move:
+	JSR negativeVelocity
+@done:
+	RTS
+
+brakeleft:
+	LDA SPRITE_ANIMATION	; Braking?
+	CMP #$02
+	BEQ @braking
+	JSR setBraking
+	LDA SPRITE_ATTRIBUTE	; Set Horizontal Flip Bit to Left
+	ORA #$40
+	STA SPRITE_ATTRIBUTE
+@braking:
+	LDA SPRITE_X_DELTA+0	; Decelerate Right Movement
+	SEC
+	SBC #<$000D		; Deceleration Lo
+	STA SPRITE_X_DELTA+0
+	LDA SPRITE_X_DELTA+1
+	SBC #>$000D		; Deceleration Hi
+	STA SPRITE_X_DELTA+1
+	LDA SPRITE_X_DELTA+0	; Reached Stop?
+	CMP #<$0000
+	LDA SPRITE_X_DELTA+1
+	SBC #>$0000
+	BPL @slide
+	JSR setStanding
+@slide:
+	LDA SPRITE_X_LO		; Move Right?
+	CMP #<$03F0
+	LDA SPRITE_X_HI
+	SBC #>$03F0
+	BCS @done
+	JSR positiveVelocity
+@done:
+	RTS
+
+walkright:
+	LDA SPRITE_ANIMATION	; Walking?
+	CMP #$01
+	BEQ @walk
+	JSR setWalking
+	LDA SPRITE_ATTRIBUTE	; Set Horizontal Flip Bit to Right
+	AND #$40				;#~$40
+	STA SPRITE_ATTRIBUTE
+@walk:
+	LDA SPRITE_X_LO		; Move Right?
+	CMP #<$03F0
+	LDA SPRITE_X_HI
+	SBC #>$03F0
+	BCS @done
+	LDA SPRITE_X_DELTA+0	; Accelerate to the Right
+	CLC
+	ADC #<$000E		; Acceleration Lo
+	STA SPRITE_X_DELTA+0
+	LDA SPRITE_X_DELTA+1
+	ADC #>$000E		; Acceleration Hi
+	STA SPRITE_X_DELTA+1
+	LDA SPRITE_X_DELTA+0	; Reached Max Speed?
+	CMP #<$014C
+	LDA SPRITE_X_DELTA+1
+	SBC #>$014C
+	BCC @move
+	LDA #<$014C		; Set to Max Speed
+	STA SPRITE_X_DELTA+0
+	LDA #>$014C
+	STA SPRITE_X_DELTA+1
+@move:
+	JSR positiveVelocity
+@done:
+	RTS
+
+brakeright:
+	LDA SPRITE_ANIMATION	; Braking?
+	CMP #$02
+	BEQ @braking
+	JSR setBraking
+	LDA SPRITE_ATTRIBUTE	; Set Horizontal Flip to Right
+	AND #$40				;#~$40
+	STA SPRITE_ATTRIBUTE
+@braking:
+	LDA SPRITE_X_DELTA+0	; Decelerate Left Movement
+	CLC
+	ADC #<$000D		; Deceleration Lo
+	STA SPRITE_X_DELTA+0
+	LDA SPRITE_X_DELTA+1
+	ADC #>$000D		; Deceleration Hi
+	STA SPRITE_X_DELTA+1
+	LDA SPRITE_X_DELTA+0	; Reached Stop?
+	CMP #<$0000
+	LDA SPRITE_X_DELTA+1
+	SBC #>$0000
+	BMI @slide
+	JSR setStanding
+	JSR positiveVelocity
+	JMP @done
+@slide:
+	LDA SPRITE_X_LO		; Move Left?
+	CMP #<$0004
+	LDA SPRITE_X_HI
+	SBC #>$0004
+	BCC @done
+	JSR negativeVelocity
+@done:
+	RTS
+
+brake:
+	LDA SPRITE_ANIMATION	; Stopped?
+	BEQ @done
+	LDA SPRITE_X_DELTA+1	; Newly Stopped?
+	BNE @brake
+	LDA SPRITE_X_DELTA+0
+	BNE @brake
+	JSR setStanding
+	JMP @done
+@brake:
+	LDA SPRITE_X_DELTA+1	; Decelerate in what direction?
+	BPL @right
+@left:
+	LDA SPRITE_X_DELTA+0	; Decelerate Left
+	CLC
+	ADC #<$000D		; Deceleration Lo
+	STA SPRITE_X_DELTA+0
+	LDA SPRITE_X_DELTA+1
+	ADC #>$000D		; Deceleration Hi
+	STA SPRITE_X_DELTA+1
+	LDA SPRITE_X_DELTA+0	; Reached Stop?
+	CMP #<$0000
+	LDA SPRITE_X_DELTA+1
+	SBC #>$0000
+	BMI @slowleft
+	JSR setStanding
+	JSR positiveVelocity
+	JMP @done
+@slowleft:
+	LDA SPRITE_X_LO		; Move Left?
+	CMP #<$0004
+	LDA SPRITE_X_HI
+	SBC #>$0004
+	BCC @done
+	JSR negativeVelocity
+	JMP @done
+@right:
+	LDA SPRITE_X_DELTA+0	; Decelerate Right
+	SEC
+	SBC #<$000D		; Deceleration Lo
+	STA SPRITE_X_DELTA+0
+	LDA SPRITE_X_DELTA+1
+	SBC #>$000D		; Deceleration Hi
+	STA SPRITE_X_DELTA+1
+	LDA SPRITE_X_DELTA+0	; Reached Stop?
+	CMP #<$0000
+	LDA SPRITE_X_DELTA+1
+	SBC #>$0000
+	BPL @slowright
+	JSR setStanding
+@slowright:
+	LDA SPRITE_X_LO		; Move Right?
+	CMP #<$03F0
+	LDA SPRITE_X_HI
+	SBC #>$03F0
+	BCS @done
+	JSR positiveVelocity
+@done:
+	RTS
+
+negativeVelocity:
+	DEC SPRITE_X_HI		; Negative Velocity Sign Extend
+positiveVelocity:
+	LDA SPRITE_X_SUB	; New Sprite Location = Sprite Location + Velocity
+	CLC
+	ADC SPRITE_X_DELTA+0
+	STA SPRITE_X_SUB
+	LDA SPRITE_X_LO
+	ADC SPRITE_X_DELTA+1
+	STA SPRITE_X_LO
+	LDA SPRITE_X_HI
+	ADC #$00
+	STA SPRITE_X_HI
+	RTS
 
 scroll_check:
 	LDA #$00		; Clear Direction
@@ -127,46 +438,62 @@ scroll_check:
 	RTS
 
 move:
-@left:
-	LDA JOYRAW1		; Left Button?
-	AND #LEFT_BUTTON
-	BEQ @right
-	LDA XSCROLL+0		; Move Left?
-	CMP #<$0001
-	LDA XSCROLL+1
-	SBC #>$0001
+	LDA SPRITE_X_LO		; Get Main Object Location
+	SEC
+	SBC XSCROLL+0
+	TAY
+	LDA SPRITE_X_HI
+	SBC XSCROLL+1
+	BMI @leftmax		; Past Left of Screen
+	BNE @rightmax		; Past Right of Screen
+	TYA			; Hit Left Window?
+	SEC
+	SBC #$62
+	BCC @lefttrap
+	TYA			; Hit Right Window?
+	SEC
+	SBC #$82
 	BCC @exit
-@moveleft:
-	LDA DRAW_FLAG		; Wait for Previous Draw
-	BNE @moveleft
-	LDA #$FF		; Speed Left ($FF, $FE, $FC, $F8)
-	STA X_DIRECTION
-	CLC			; Change Scroll by Speed
-	ADC XSCROLL+0
-	STA XSCROLL+0
-	LDA XSCROLL+1
-	SBC #$00
-	STA XSCROLL+1
-	JMP @exit
+@righttrap:
+	CMP #$04		; Scroll Speed Right
+	BCC @right
+@rightmax:
+	LDA #$04		; Set Max Scroll Speed
 @right:
-	LDA JOYRAW1		; Right Button?
-	AND #RIGHT_BUTTON
-	BEQ @exit
-	LDA XSCROLL+0		; Move Right?
-	CMP #<$0300
+	TAX
+	LDA XSCROLL+0		; Max Scroll Right?
+	CMP #<$02FF
 	LDA XSCROLL+1
-	SBC #>$0300
+	SBC #>$02FF
 	BCS @exit
-@moveright:
-	LDA DRAW_FLAG		; Wait for Previous Draw
-	BNE @moveright
-	LDA #$01		; Speed Right ($01, $02, $04, $08)
-	STA X_DIRECTION
-	CLC			; Change Scroll by Speed
+	TXA
+	STA X_DIRECTION		; Change Scroll by Speed
+	CLC
 	ADC XSCROLL+0
 	STA XSCROLL+0
 	LDA XSCROLL+1
 	ADC #$00
+	STA XSCROLL+1
+	RTS
+@lefttrap:
+	CMP #$FC		; Scroll Speed Left
+	BCS @left
+@leftmax:
+	LDA #$FC		; Set Max Scroll Speed
+@left:
+	TAX
+	LDA XSCROLL+0		; Max Scroll Left?
+	CMP #<$0003
+	LDA XSCROLL+1
+	SBC #>$0003
+	BCC @exit
+	TXA
+	STA X_DIRECTION		; Change Scroll by Speed
+	CLC
+	ADC XSCROLL+0
+	STA XSCROLL+0
+	LDA XSCROLL+1
+	SBC #$00
 	STA XSCROLL+1
 @exit:
 	RTS
@@ -849,8 +1176,9 @@ draw_attribute:
 
 column_check:
 	LDA XSCROLL+0		; Moved 8 pixels?
-	AND #%0000111
-	BNE @exit
+	AND #%00000111
+	CMP X_DRAW
+	BEQ @exit
 	LDA X_DIRECTION		; No Movement?
 	BEQ @exit
 	BPL @right		; Moved Left or Right?
@@ -909,7 +1237,8 @@ buffer_column:
 attribute_check:
 	LDA XSCROLL+0		; Moved 32 pixels?
 	AND #%00011111
-	BNE @exit
+	CMP X_DRAW
+	BEQ @exit
 	LDA X_DIRECTION		; No Movement?
 	BEQ @exit
 	BPL @right		; Left or Right?
@@ -1022,6 +1351,274 @@ status_bar:
 	.BYTE $24,$24,$24,$16,$0A,$1B,$12,$18,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$20,$18,$1B,$15,$0D,$24,$24,$1D,$12,$16,$0E,$24,$24,$24
 	.BYTE $24,$24,$24,$00,$00,$00,$00,$00,$00,$24,$24,$2E,$29,$00,$00,$24,$24,$24,$24,$01,$28,$01,$24,$24,$24,$24,$02,$03,$06,$24,$24,$24
 status_bar_end:
+
+;-------------------;
+; ANIMATION SECTION ;
+;-------------------;
+
+animation_index:
+	.WORD mario_standing	; $00
+	.WORD mario_walking	; $01
+	.WORD mario_skidding	; $02
+	.WORD mario_jumping	; $03
+	.WORD mario_swimming	; $04
+	.WORD mario_climbing	; $05
+	.WORD mario_killed	; $06
+
+mario_standing:
+	.WORD mario_standing0
+	.WORD animation_loop
+
+mario_walking:
+	.WORD mario_walking0
+	.WORD mario_walking1
+	.WORD mario_walking2
+	.WORD animation_loop
+
+mario_skidding:
+	.WORD mario_skidding0
+	.WORD animation_loop
+
+mario_jumping:
+	.WORD mario_jumping0
+	.WORD animation_loop
+
+mario_swimming:
+	.WORD mario_swimming0
+	.WORD mario_swimming1
+	.WORD mario_swimming2
+	.WORD animation_loop
+
+mario_climbing:
+	.WORD mario_climbing0
+	.WORD mario_climbing1
+	.WORD animation_loop
+
+mario_killed:
+	.WORD mario_killed0
+	.WORD animation_loop
+
+mario_standing0:
+	.BYTE $04
+	.BYTE $00, $00, $3A, $00
+	.BYTE $00, $08, $37, $00
+	.BYTE $08, $00, $4F, $00
+	.BYTE $08, $08, $4F, $40
+
+mario_walking0:
+	.BYTE $04
+	.BYTE $00, $00, $32, $00
+	.BYTE $00, $08, $33, $00
+	.BYTE $08, $00, $34, $00
+	.BYTE $08, $08, $35, $00
+
+mario_walking1:
+	.BYTE $04
+	.BYTE $00, $00, $36, $00
+	.BYTE $00, $08, $37, $00
+	.BYTE $08, $00, $38, $00
+	.BYTE $08, $08, $39, $00
+
+mario_walking2:
+	.BYTE $04
+	.BYTE $00, $00, $3A, $00
+	.BYTE $00, $08, $37, $00
+	.BYTE $08, $00, $3B, $00
+	.BYTE $08, $08, $3C, $00
+
+mario_skidding0:
+	.BYTE $04
+	.BYTE $00, $00, $3D, $00
+	.BYTE $00, $08, $3E, $00
+	.BYTE $08, $00, $3F, $00
+	.BYTE $08, $08, $40, $00
+
+mario_jumping0:
+	.BYTE $04
+	.BYTE $00, $00, $32, $00
+	.BYTE $00, $08, $41, $00
+	.BYTE $08, $00, $42, $00
+	.BYTE $08, $08, $43, $00
+
+mario_swimming0:
+	.BYTE $04
+	.BYTE $00, $00, $32, $00
+	.BYTE $00, $08, $33, $00
+	.BYTE $08, $00, $44, $00
+	.BYTE $08, $08, $45, $00
+
+mario_swimming1:
+	.BYTE $04
+	.BYTE $00, $00, $32, $00
+	.BYTE $00, $08, $33, $00
+	.BYTE $08, $00, $44, $00
+	.BYTE $08, $08, $47, $00
+
+mario_swimming2:
+	.BYTE $04
+	.BYTE $00, $00, $32, $00
+	.BYTE $00, $08, $33, $00
+	.BYTE $08, $00, $48, $00
+	.BYTE $08, $08, $49, $00
+
+mario_climbing0:
+	.BYTE $04
+	.BYTE $00, $00, $32, $00
+	.BYTE $00, $08, $33, $00
+	.BYTE $08, $00, $90, $00
+	.BYTE $08, $08, $91, $00
+
+mario_climbing1:
+	.BYTE $04
+	.BYTE $00, $00, $3A, $00
+	.BYTE $00, $08, $37, $00
+	.BYTE $08, $00, $92, $00
+	.BYTE $08, $08, $93, $00
+
+mario_killed0:
+	.BYTE $04
+	.BYTE $00, $00, $9E, $00
+	.BYTE $00, $08, $9E, $40
+	.BYTE $08, $00, $9F, $00
+	.BYTE $08, $08, $9F, $40
+
+animation_loop:
+	.BYTE $FF, $00
+
+setStanding:
+	LDA #$00		; Set to Standing
+	STA SPRITE_X_DELTA+0
+	STA SPRITE_X_DELTA+1
+	LDA #$00		; Set to Standing Animation
+	STA SPRITE_ANIMATION
+	STA SPRITE_FRAME_SUB	; Reset Frame
+	STA SPRITE_FRAME
+	RTS
+
+setWalking:
+	LDA #$01		; Set to Walk Animation
+	STA SPRITE_ANIMATION
+	LDA #$00		; Reset Frame
+	STA SPRITE_FRAME_SUB
+	STA SPRITE_FRAME
+	RTS
+
+setBraking:
+	LDA #$02		; Set to Brake Animation
+	STA SPRITE_ANIMATION
+	LDA #$00		; Reset Frame
+	STA SPRITE_FRAME_SUB
+	STA SPRITE_FRAME
+	RTS
+
+animation:
+	LDA SPRITE_ANIMATION	; Get Animation Pointer
+	ASL
+	TAX
+	LDA animation_index+0,X
+	STA TEMP+0
+	LDA animation_index+1,X
+	STA TEMP+1
+@start:
+	LDA SPRITE_FRAME	; Get Frame Pointer
+	ASL
+	TAY
+	LDA (TEMP),Y
+	STA ANIMATION+0
+	INY
+	LDA (TEMP),Y
+	STA ANIMATION+1
+	LDY #$00		; Set to Metasprite Size/Control Code
+	LDA (ANIMATION),Y	; Get Metasprite Size/Control Code
+	CMP #$FF		; Loop Control Code?
+	BNE @noloop
+	INY			; Set Loop Index
+	LDA (ANIMATION),Y
+	STA SPRITE_FRAME	; Set to Reset Frame
+	JMP @start
+@noloop:
+	STA TEMP+2		; Store Metasprite Size
+	LDX OAM_USED		; Get OAM Location
+@load:
+	INY			; Set Y Offset Index
+	LDA (ANIMATION),Y	; Get Y Offset
+	CLC
+	ADC SPRITE_Y		; Y + Offset = Sprite Y
+	STA __SPRITE_LOAD__+0,X	; Store Sprite Y
+	INY			; X Offset Index
+	BIT SPRITE_ATTRIBUTE	; Horizontal Flip?
+	BVC @no_flip
+	LDA SPRITE_X_LO		; X Location + Middle Spot = Right Edge
+	CLC
+	ADC #<$0008		; Middle Spot Lo
+	STA TEMP+0
+	LDA SPRITE_X_HI
+	ADC #>$0008		; Middle Spot Hi
+	STA TEMP+1
+	LDA TEMP+0		; Right Edge - Offset = Sprite X
+	SEC
+	SBC (ANIMATION),Y
+	STA TEMP+0
+	LDA TEMP+1
+	SBC #$00
+	STA TEMP+1
+	JMP @flipped
+@no_flip:
+	LDA (ANIMATION),Y	; Left Edge + Offset = Sprite X
+	CLC
+	ADC SPRITE_X_LO
+	STA TEMP+0
+	LDA #$00
+	ADC SPRITE_X_HI
+	STA TEMP+1
+@flipped:
+	LDA TEMP+0		; Sprite on Screen?
+	SEC
+	SBC XSCROLL+0
+	STA TEMP+0
+	LDA TEMP+1
+	SBC XSCROLL+1
+	STA TEMP+1
+	BEQ @noskip
+	LDA #$F0		; Set Sprite Off the Screen
+	STA __SPRITE_LOAD__+0,X	; Store Sprite Y
+	INY			; Skip Sprite Tile and Attribute
+	INY
+	JMP @done
+@noskip:
+	LDA TEMP+0		; Sprite X
+	STA __SPRITE_LOAD__+3,X	; Store Sprite X
+	INY			; Set Tile Index
+	LDA (ANIMATION),Y	
+	STA __SPRITE_LOAD__+1,X	; Store Sprite Tile
+	INY			; Set Attribute Index
+	LDA (ANIMATION),Y
+	EOR SPRITE_ATTRIBUTE	; Set Horizontal Flip
+	STA __SPRITE_LOAD__+2,X	; Store Sprite Attribute
+	INX			; Next Sprite
+	INX
+	INX
+	INX
+@done:
+	STX OAM_USED		; Store Used OAM
+	DEC TEMP+2		; Last Sprite?
+	BNE @load
+@exit:
+	RTS
+
+clear_sprite:
+	; Clear OAM Buffer
+	LDY OAM_USED		; Set Index to First Byte
+	BEQ @exit
+	LDA #$F0		; Set Y Position to off-screen
+:	STA __SPRITE_LOAD__,Y	; Store Y Position in OAM Buffer
+	INY			; Set to next sprite
+	INY
+	INY
+	INY
+	BNE :-			; Last sprite?
+@exit:
+	RTS
 
 ;===============================================================================
 .segment "BANK_01"
