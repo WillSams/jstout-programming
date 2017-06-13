@@ -26,34 +26,34 @@
 .define LEFT_BUTTON   %00000010
 .define RIGHT_BUTTON  %00000001
 
-SOFT_2000:	.res 1
-SOFT_2001:	.res 1
-VRAM_INCREMENT:	.res 1
-DRAW_FLAG:	.res 1
-YSCROLL:	.res 1
-XSCROLL:	.res 2
-X_DIRECTION:	.res 1
-FADE:		.res 1
-JOYRAW1:	.res 1
-JOYRAW2:	.res 1
-JOYPRESS1:	.res 1
-JOYPRESS2:	.res 1
-JOYHELD1:	.res 1
-JOYHELD2:	.res 1
-BUFFER_LENGTH:	.res 1
-BUFFER_END:	.res 1
-SOURCE:		.res 2
-VRAM_ADDRESS:	.res 2
-DRAW_WIDTH:	.res 1
-DRAW_HEIGHT:	.res 1
-TEMP:		.res 3
-X_DRAW:		.res 1
+SOFT_2000:			.res 1
+SOFT_2001:			.res 1
+VRAM_INCREMENT:		.res 1
+DRAW_FLAG:			.res 1
+YSCROLL:			.res 1
+XSCROLL:			.res 2
+X_DIRECTION:		.res 1
+FADE:				.res 1
+JOYRAW1:			.res 1
+JOYRAW2:			.res 1
+JOYPRESS1:			.res 1
+JOYPRESS2:			.res 1
+JOYHELD1:			.res 1
+JOYHELD2:			.res 1
+BUFFER_LENGTH:		.res 1
+BUFFER_END:			.res 1
+SOURCE:				.res 2
+VRAM_ADDRESS:		.res 2
+DRAW_WIDTH:			.res 1
+DRAW_HEIGHT:		.res 1
+TEMP:				.res 3
+X_DRAW:				.res 1
 
-ANIMATION:	.res 2
+ANIMATION:			.res 2
 SPRITE_ANIMATION:	.res 1
 SPRITE_FRAME_SUB:	.res 1
 SPRITE_FRAME:		.res 1
-SPRITE_Y:		.res 1
+SPRITE_Y:			.res 1
 SPRITE_X_SUB:		.res 1
 SPRITE_X_LO:		.res 1
 SPRITE_X_HI:		.res 1
@@ -61,12 +61,12 @@ SPRITE_X_DELTA:		.res 2
 SPRITE_ATTRIBUTE:	.res 1
 SPRITE_HEIGHT:		.res 1
 
-OAM_USED:	.res 1
+OAM_USED:			.res 1
 
-ENEMY_Y:	.res 1
-ENEMY_X_LO:	.res 1
-ENEMY_X_HI:	.res 1
-DISTANCE:	.res 2
+ENEMY_Y:			.res 1
+ENEMY_X_LO:			.res 1
+ENEMY_X_HI:			.res 1
+DISTANCE:			.res 2
 
 ;===============================================================================
 .segment "SPRITE"
@@ -2070,4 +2070,5 @@ x_sprite_collision:
 
 ;===============================================================================
 .segment "GRAPHIC"
+;=====================
 	.incbin "./resources/mario.chr"
