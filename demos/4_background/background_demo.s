@@ -26,24 +26,23 @@
 .define LEFT_BUTTON   %00000010
 .define RIGHT_BUTTON  %00000001
 
-.ZEROPAGE
-SOFT_2000:	.res 1
-SOFT_2001:	.res 1
+SOFT_2000:		.res 1
+SOFT_2001:		.res 1
 VRAM_INCREMENT:	.res 1
-DRAW_FLAG:	.res 1
-YSCROLL:	.res 1
-XSCROLL:	.res 1
-FADE:		.res 1
-JOYRAW1:	.res 1
-JOYRAW2:	.res 1
-JOYPRESS1:	.res 1
-JOYPRESS2:	.res 1
-JOYHELD1:	.res 1
-JOYHELD2:	.res 1
+DRAW_FLAG:		.res 1
+YSCROLL:		.res 1
+XSCROLL:		.res 1
+FADE:			.res 1
+JOYRAW1:		.res 1
+JOYRAW2:		.res 1
+JOYPRESS1:		.res 1
+JOYPRESS2:		.res 1
+JOYHELD1:		.res 1
+JOYHELD2:		.res 1
 BUFFER_LENGTH:	.res 1
-BUFFER_END:	.res 1
-SOURCE:		.res 2
-TEMP:		.res 3
+BUFFER_END:		.res 1
+SOURCE:			.res 2
+TEMP:			.res 3
 
 ;===============================================================================
 .segment "SPRITE"
@@ -65,8 +64,8 @@ MARIO:		.res 16
 .segment "BANK_00"
 ;=====================
 Reset:
-	CLD			; Clear Decimal Mode (NES has no BCD)
-	SEI			; Disable IRQs
+	CLD				; Clear Decimal Mode (NES has no BCD)
+	SEI				; Disable IRQs
 	LDX #$FF 		; Reset the Stack Pointer
 	TXS
 	; Clear the Work RAM ($0000-$07FF)
@@ -106,8 +105,8 @@ Reset:
 	STA SOFT_2000
 	LDA #%00011110		; Display BG and Objects
 	STA SOFT_2001
-	CLI			; Enable IRQs
-	JSR fade_in		; Fade Screen to Full Color
+	CLI					; Enable IRQs
+	JSR fade_in			; Fade Screen to Full Color
 game_loop:
 	JSR write_message
 	JMP game_loop
@@ -171,8 +170,8 @@ write_message:
 ;------------------------;
 
 clear_vram:
-	LDA SOFT_2000		; Get $2000 Register Settings
-	AND #%11111011		; Set VRAM Increment to Across
+	LDA SOFT_2000	; Get $2000 Register Settings
+	AND #%11111011	; Set VRAM Increment to Across
 	STA $2000		; Store $2000 Register Settings
 	LDA #>$2400		; VRAM Address Hi Byte
 	STA $2006		; Store VRAM Address Hi Byte
@@ -184,28 +183,28 @@ clear_vram:
 	LDY #<$0800		; Set Index Length Lo Byte
 	LDA #$00		; Clear Data
 :	STA $2007		; Store Data in VRAM
-	INY			; Next Lo Byte
+	INY				; Next Lo Byte
 	BNE :-			; Increase Hi Byte?
-	DEX			; Next Hi Byte
+	DEX				; Next Hi Byte
 	BNE :-			; Done?
 	RTS
 
 clear_oam:
 	; Clear OAM Buffer
-	LDY #$00		; Set Index to First Byte
-	LDA #$F0		; Set Y Position to off-screen
+	LDY #$00				; Set Index to First Byte
+	LDA #$F0				; Set Y Position to off-screen
 :	STA __SPRITE_LOAD__,Y	; Store Y Position in OAM Buffer
-	INY			; Set to next sprite
+	INY						; Set to next sprite
 	INY
 	INY
 	INY
-	BNE :-			; Last sprite?
+	BNE :-					; Last sprite?
 	RTS
 
 init_sound:
-	LDA #%00001111		; Enable Sound Channels
+	LDA #%00001111			; Enable Sound Channels
 	STA $4015
-	LDA #%01000000		; Disable Frame IRQS
+	LDA #%01000000			; Disable Frame IRQS
 	STA $4017
 	RTS
 
@@ -230,12 +229,12 @@ init_graphics:
 
 NMI:
 	; Store Values
-	PHA			; Push A
-	TXA			; Push X
+	PHA					; Push A
+	TXA					; Push X
 	PHA
-	TYA			; Push Y
+	TYA					; Push Y
 	PHA
-	BIT $2002		; Acknowledge NMI and Reset $2005/$2006 Latch
+	BIT $2002			; Acknowledge NMI and Reset $2005/$2006 Latch
 	LDA DRAW_FLAG		; Check for Draw Screen Update
 	CMP #TRUE
 	BNE @done
@@ -252,11 +251,11 @@ NMI:
 	STA DRAW_FLAG
 	JSR update_joypad	; Update Joypads
 	; Return Values
-	PLA			; Pull Y
+	PLA					; Pull Y
 	TAY
-	PLA			; Pull X
+	PLA					; Pull X
 	TAX
-	PLA			; Pull A
+	PLA					; Pull A
 IRQ:	RTI
 
 ;-----------------;
@@ -264,70 +263,70 @@ IRQ:	RTI
 ;-----------------;
 
 update_oam:
-	LDA #$00		; Set to first byte in OAM
+	LDA #$00				; Set to first byte in OAM
 	STA $2003
 	LDA #>__SPRITE_LOAD__	; Set to the OAM Buffer Memory Page
-	STA $4014		; DMA OAM Buffer to OAM
+	STA $4014				; DMA OAM Buffer to OAM
 	RTS
 
 update_palette:
-	LDA FADE		; Get Fade
-	CMP #$0F		; Full Color?
+	LDA FADE				; Get Fade
+	CMP #$0F				; Full Color?
 	BNE @exit
-	LDA SOFT_2000		; Set VRAM Increment to Across
+	LDA SOFT_2000			; Set VRAM Increment to Across
 	AND #%11111011
 	STA $2000
-	LDA #>$3F00		; Set Palette RAM Address
+	LDA #>$3F00				; Set Palette RAM Address
 	STA $2006
 	LDA #<$3F00
 	STA $2006
-	LDX #$00		; Set Index to First Color
+	LDX #$00				; Set Index to First Color
 @loop:
 	LDA __PALETTE_LOAD__,X	; Load Color
-	STA $2007		; Store Color in Palette RAM
-	INX			; Next Color
-	CPX #$20		; Continue until Last Color
+	STA $2007				; Store Color in Palette RAM
+	INX						; Next Color
+	CPX #$20				; Continue until Last Color
 	BNE @loop
 @exit:
 	RTS
 
 update_vram:
-	LDA #$00		; Set to Clear
-	LDX BUFFER_LENGTH	; Get Buffer Length
+	LDA #$00				; Set to Clear
+	LDX BUFFER_LENGTH		; Get Buffer Length
 	STA __BUFFER_LOAD__+0,X	; Store 0 at End
-	STA BUFFER_LENGTH	; Clear Buffer Length
-	TAY			; Set to First Byte in Buffer
+	STA BUFFER_LENGTH		; Clear Buffer Length
+	TAY						; Set to First Byte in Buffer
 @next:
 	LDA __BUFFER_LOAD__+0,Y	; Get Data Length
-	BEQ @end		; End?
-	STA VRAM_INCREMENT	; Get VRAM Increment Flag and Repeat Flag
-	AND #%00111111		; Remove VRAM Increment Flag and Repeat Flag
-	TAX			; Set X to Data Length
-	LDA SOFT_2000		; Get $2000 Settings
-	AND #%11111011		; Set VRAM Increment to Across
-	BIT VRAM_INCREMENT	; Check VRAM Increment Flag
+	BEQ @end				; End?
+	STA VRAM_INCREMENT		; Get VRAM Increment Flag and Repeat Flag
+	AND #%00111111			; Remove VRAM Increment Flag and Repeat Flag
+	TAX						; Set X to Data Length
+	LDA SOFT_2000			; Get $2000 Settings
+	AND #%11111011			; Set VRAM Increment to Across
+	BIT VRAM_INCREMENT		; Check VRAM Increment Flag
 	BPL @inc
-	ORA #%00000100		; Set VRAM Increment to Down
+	ORA #%00000100			; Set VRAM Increment to Down
 @inc:
-	STA $2000		; Store VRAM Increment
+	STA $2000				; Store VRAM Increment
 	LDA __BUFFER_LOAD__+2,Y	; Get VRAM Address Hi Byte
-	STA $2006		; Store VRAM Address Hi Byte
+	STA $2006				; Store VRAM Address Hi Byte
 	LDA __BUFFER_LOAD__+1,Y	; Get VRAM Address Lo Byte
-	STA $2006		; Store VRAM Address Lo Byte
-	INY			; Set Y + 3 to First Data Byte
+	STA $2006				; Store VRAM Address Lo Byte
+	INY						; Set Y + 3 to First Data Byte
 	INY
 	; Store Data in VRAM (V clear = X Data, V set = repeat Data X times)
-	BVC @loop		; Check Repeat Flag
+	BVC @loop				; Check Repeat Flag
 	INY
 @loop:
-	BVS @store		; Repeat?
+	BVS @store				; Repeat?
 	INY
 @store:
 	LDA __BUFFER_LOAD__+0,Y	; Get Data
-	STA $2007		; Store Data in VRAM
-	DEX			; Next Byte
+	STA $2007				; Store Data in VRAM
+	DEX						; Next Byte
 	BNE @loop
-	INY			; Check Next in Buffer
+	INY						; Check Next in Buffer
 	JMP @next
 @end:
 	RTS
@@ -335,9 +334,9 @@ update_vram:
 update_scroll:
 	LDA SOFT_2000		; Set Name Table
 	STA $2000
-	LDA XSCROLL		; Set Horizontal Scroll Offset
+	LDA XSCROLL			; Set Horizontal Scroll Offset
 	STA $2005
-	LDA YSCROLL		; Set Vertical Scroll Offset
+	LDA YSCROLL			; Set Vertical Scroll Offset
 	STA $2005
 	RTS
 
@@ -369,26 +368,26 @@ title_palette:
 	.BYTE $22,$16,$27,$18, $22,$1A,$30,$27, $22,$16,$30,$27, $22,$0F,$36,$17
 
 fade_in:
-	LDA FADE		; Current Fade Timer
-	CMP #$0F		; End of Fade In?
+	LDA FADE			; Current Fade Timer
+	CMP #$0F			; End of Fade In?
 	BCS @done
-	INC FADE		; Increase Fade Timer
+	INC FADE			; Increase Fade Timer
 	JSR buffer_palette
-	LDA #TRUE		; Ready to Update
+	LDA #TRUE			; Ready to Update
 	STA DRAW_FLAG
 @wait:
 	LDA DRAW_FLAG		; Updated?
 	BNE @wait
-	JMP fade_in		; Check Next Fade Time
+	JMP fade_in			; Check Next Fade Time
 @done:
 	RTS
 
 fade_out:
-	LDA FADE		; Current Fade Timer
-	BEQ @done		; End of Fade Out?
-	DEC FADE		; Decrease Fade Timer
+	LDA FADE			; Current Fade Timer
+	BEQ @done			; End of Fade Out?
+	DEC FADE			; Decrease Fade Timer
 	JSR buffer_palette
-	LDA #TRUE		; Ready to Update
+	LDA #TRUE			; Ready to Update
 	STA DRAW_FLAG
 @wait:
 	LDA DRAW_FLAG		; Updated?
@@ -404,33 +403,33 @@ PALETTE_FADE:
 	.BYTE $0F, $00, $00, $00, $10, $10, $10, $10, $20, $20, $20, $20, $30, $30, $30, $30	; $30-$3F Colors
 
 buffer_palette:
-	LDX BUFFER_LENGTH	; Get Current Buffer Length
-	STX BUFFER_END		; Store X as Buffer End
-	LDA #<$3F00		; Get VRAM Address Lo Byte
+	LDX BUFFER_LENGTH		; Get Current Buffer Length
+	STX BUFFER_END			; Store X as Buffer End
+	LDA #<$3F00				; Get VRAM Address Lo Byte
 	STA __BUFFER_LOAD__+1,X	; Store VRAM Address Lo Byte in Buffer
-	LDA #>$3F00		; Get VRAM Address Hi Byte
+	LDA #>$3F00				; Get VRAM Address Hi Byte
 	STA __BUFFER_LOAD__+2,X	; Store VRAM Address Hi Byte in Buffer
-	LDX #$00		; Set Index to First Color
+	LDX #$00				; Set Index to First Color
 :	LDA __PALETTE_LOAD__,X	; Get Color
-	AND #$F0		; Keep Color Hi Nibble (Brightness)
-	ORA FADE		; Set Fade Timer Lo Nibble
-	TAY			; Set as Index
+	AND #$F0				; Keep Color Hi Nibble (Brightness)
+	ORA FADE				; Set Fade Timer Lo Nibble
+	TAY						; Set as Index
 	LDA __PALETTE_LOAD__,X	; Load Color
-	AND #$0F		; Keep Color Lo Nibble
-	ORA PALETTE_FADE,Y	; Set Color Hi Nibble
+	AND #$0F				; Keep Color Lo Nibble
+	ORA PALETTE_FADE,Y		; Set Color Hi Nibble
 	STA __BUFFER_LOAD__+3,X	; Store Color in Buffer
-	INX			; Next Color
-	CPX #$20		; Continue until Last Color
+	INX						; Next Color
+	CPX #$20				; Continue until Last Color
 	BNE :-
-	TXA			; Get Length
+	TXA						; Get Length
 	CLC
-	ADC BUFFER_LENGTH	; Add Buffer Length
-	LDX BUFFER_END		; Set Index to Original End
+	ADC BUFFER_LENGTH		; Add Buffer Length
+	LDX BUFFER_END			; Set Index to Original End
 	STA __BUFFER_LOAD__+0,X	; Store Bytes Used into Buffer
 	CLC
-	ADC BUFFER_END		; Add Bytes Used to Buffer End
-	ADC #$03		; Add VRAM Address and Length Bytes
-	STA BUFFER_LENGTH	; Store New Buffer Length
+	ADC BUFFER_END			; Add Bytes Used to Buffer End
+	ADC #$03				; Add VRAM Address and Length Bytes
+	STA BUFFER_LENGTH		; Store New Buffer Length
 	RTS
 
 ;----------------;
@@ -445,23 +444,23 @@ load_title_sprites:
 	RTS
 
 load_oam:
-	STX TEMP+0		; Store Source Lo Byte
-	STY TEMP+1		; Store Source Hi Byte
-	STA TEMP+2		; Store Source Length
+	STX TEMP+0				; Store Source Lo Byte
+	STY TEMP+1				; Store Source Hi Byte
+	STA TEMP+2				; Store Source Length
 	; Clear OAM Buffer
 	LDY #$00
-	LDA #$F0		; Set Y Position to off-screen
+	LDA #$F0				; Set Y Position to off-screen
 :	STA __SPRITE_LOAD__,Y	; Store Y Position in OAM Buffer
-	INY			; Set to next sprite
+	INY						; Set to next sprite
 	INY
 	INY
 	INY
-	BNE :-			; Last sprite?
+	BNE :-					; Last sprite?
 	; Load Sprites into OAM Buffer
-:	LDA (TEMP),Y		; Get Sprite Attribute
+:	LDA (TEMP),Y			; Get Sprite Attribute
 	STA __SPRITE_LOAD__,Y	; Store in OAM Buffer
-	INY			; Next Sprite Attribute
-	CPY TEMP+2		; Last Sprite Attribute?
+	INY						; Next Sprite Attribute
+	CPY TEMP+2				; Last Sprite Attribute?
 	BNE :-
 	RTS
 
@@ -479,48 +478,48 @@ title_sprites_end:
 update_joypad:
 	; Joypad Strobing
 	LDA #$01
-	STA $4016		; Set Strobe
+	STA $4016			; Set Strobe
 	LDA #$00
-	STA $4016		; Clear Strobe
+	STA $4016			; Clear Strobe
 	; Read Joypad 1
-	LDX JOYRAW1		; Previous Joypad 1 Read
-	LDY #$08		; Set to read 8 buttons
-:	LDA $4016		; Get Joypad 1 Button
-	LSR			; Set Button in Carry
-	ROL JOYRAW1		; Set Button in Raw Data
+	LDX JOYRAW1			; Previous Joypad 1 Read
+	LDY #$08			; Set to read 8 buttons
+:	LDA $4016			; Get Joypad 1 Button
+	LSR					; Set Button in Carry
+	ROL JOYRAW1			; Set Button in Raw Data
 	AND #%00000001		; Famicon Expansion Port 3 Button
-	ORA JOYRAW1		; Set Famicon Button in Raw Data
-	STA JOYRAW1		; Store Raw Data
-	DEY			; Next Button
-	BNE :-			; Last Button?
+	ORA JOYRAW1			; Set Famicon Button in Raw Data
+	STA JOYRAW1			; Store Raw Data
+	DEY					; Next Button
+	BNE :-				; Last Button?
 	; Pressed Button Check
-	TXA			; Previous Joypad Read
-	EOR JOYRAW1		; Find Button Changes
-	AND JOYRAW1		; Find New Button Changes
+	TXA					; Previous Joypad Read
+	EOR JOYRAW1			; Find Button Changes
+	AND JOYRAW1			; Find New Button Changes
 	STA JOYPRESS1		; Store Pressed Buttons
 	; Held Button Check
-	TXA			; Previous Joypad Read
-	AND JOYRAW1		; Find Same Buttons
+	TXA					; Previous Joypad Read
+	AND JOYRAW1			; Find Same Buttons
 	STA JOYHELD1		; Store Held Buttons
 	; Read Joypad 2
-	LDX JOYRAW2		; Previous Joypad 2 Read
-	LDY #$08		; Set to read 8 buttons
-:	LDA $4017		; Get Joypad 2 Button
-	LSR			; Set Button in Carry
-	ROL JOYRAW2		; Set Button in Raw Data
+	LDX JOYRAW2			; Previous Joypad 2 Read
+	LDY #$08			; Set to read 8 buttons
+:	LDA $4017			; Get Joypad 2 Button
+	LSR					; Set Button in Carry
+	ROL JOYRAW2			; Set Button in Raw Data
 	AND #%00000001		; Famicon Expansion Port 4 Button
-	ORA JOYRAW2		; Set Famicon Button in Raw Data
-	STA JOYRAW2		; Store Raw Data
-	DEY			; Next Button
-	BNE :-			; Last Button?
+	ORA JOYRAW2			; Set Famicon Button in Raw Data
+	STA JOYRAW2			; Store Raw Data
+	DEY					; Next Button
+	BNE :-				; Last Button?
 	; Pressed Button Check
-	TXA			; Previous Joypad Read
-	EOR JOYRAW2		; Find Button Changes
-	AND JOYRAW2		; Find New Button Changes
+	TXA					; Previous Joypad Read
+	EOR JOYRAW2			; Find Button Changes
+	AND JOYRAW2			; Find New Button Changes
 	STA JOYPRESS2		; Store Pressed Buttons
 	; Held Button Check
-	TXA			; Previous Joypad Read
-	AND JOYRAW2		; Find Same Buttons
+	TXA					; Previous Joypad Read
+	AND JOYRAW2			; Find Same Buttons
 	STA JOYHELD2		; Store Held Buttons
 	RTS
 
@@ -538,11 +537,11 @@ load_title_vram:
 	RTS
 
 load_vram:
-	STX TEMP+0		; Store Source Lo
-	STY TEMP+1		; Store Source Hi
-	LDY #$00		; Set to First Byte of Source Address
+	STX TEMP+0			; Store Source Lo
+	STY TEMP+1			; Store Source Hi
+	LDY #$00			; Set to First Byte of Source Address
 @next:
-	INY			; Set to VRAM Address Hi Byte
+	INY					; Set to VRAM Address Hi Byte
 	LDA (TEMP),Y		; Get VRAM Address Hi Byte
 	AND #%11000000		; Get VRAM Increment Flag
 	STA VRAM_INCREMENT	; Store VRAM Increment Flag
@@ -552,26 +551,26 @@ load_vram:
 	BPL @inc
 	ORA #%00000100		; Set VRAM Increment to Down
 @inc:
-	STA $2000		; Store VRAM Increment
+	STA $2000			; Store VRAM Increment
 	LDA (TEMP),Y		; Get VRAM Address Hi Byte
 	AND #%00111111		; Remove VRAM Increment Flag
-	STA $2006		; Store VRAM Address Hi Byte
+	STA $2006			; Store VRAM Address Hi Byte
 	DEY
 	LDA (TEMP),Y		; Get VRAM Address Lo Byte
-	STA $2006		; Store VRAM Address Lo Byte
+	STA $2006			; Store VRAM Address Lo Byte
 	INY
 	INY
 @store:
 	LDA (TEMP),Y		; Get Source Data
-	CMP #$FE		; Check for Control Bytes
+	CMP #$FE			; Check for Control Bytes
 	BCS @end
-	STA $2007		; Store Byte into VRAM
-	INY			; Next Byte
-	BNE @store		; Wrap?
-	INC TEMP+1		; Increase Source Hi Byte
+	STA $2007			; Store Byte into VRAM
+	INY					; Next Byte
+	BNE @store			; Wrap?
+	INC TEMP+1			; Increase Source Hi Byte
 	JMP @store
 @end:
-	CMP #$FF		; Check for End Control Byte
+	CMP #$FF			; Check for End Control Byte
 	BNE @next
 	RTS
 
@@ -622,51 +621,51 @@ title_attribute_table:
 	.BYTE $FF
 
 buffer_vram:
-	STX TEMP+0		; Store VRAM Address Lo
-	STY TEMP+1		; Store VRAM Address Hi
-	STA TEMP+2  		; Store Source Length
-	LDX BUFFER_LENGTH	; Get Current Buffer Length
-	STX BUFFER_END		; Store X as Buffer End
-	LDA TEMP+0		; Get VRAM Address Lo Byte
+	STX TEMP+0				; Store VRAM Address Lo
+	STY TEMP+1				; Store VRAM Address Hi
+	STA TEMP+2  			; Store Source Length
+	LDX BUFFER_LENGTH		; Get Current Buffer Length
+	STX BUFFER_END			; Store X as Buffer End
+	LDA TEMP+0				; Get VRAM Address Lo Byte
 	STA __BUFFER_LOAD__+1,X	; Store VRAM Address Lo Byte in Buffer
-	LDA TEMP+1		; Get VRAM Address Hi Byte
-	AND #%11000000		; Get VRAM Increment and Repeat Flag
-	STA VRAM_INCREMENT	; Store VRAM Increment and Repeat Flag
-	LDA TEMP+1		; Get VRAM Address Hi Byte
-	AND #%00111111		; Remove VRAM Increment and Repeat Flag
+	LDA TEMP+1				; Get VRAM Address Hi Byte
+	AND #%11000000			; Get VRAM Increment and Repeat Flag
+	STA VRAM_INCREMENT		; Store VRAM Increment and Repeat Flag
+	LDA TEMP+1				; Get VRAM Address Hi Byte
+	AND #%00111111			; Remove VRAM Increment and Repeat Flag
 	STA __BUFFER_LOAD__+2,X	; Store VRAM Address Hi Byte in Buffer
-	LDY #$00		; Set to First Byte of Source Address
-	BIT VRAM_INCREMENT	; Check for Repeat Flag
+	LDY #$00				; Set to First Byte of Source Address
+	BIT VRAM_INCREMENT		; Check for Repeat Flag
 	BVS @repeat
 @next:
-	LDA (SOURCE),Y		; Get Source Data
-	CPY TEMP+2		; Last Byte?
+	LDA (SOURCE),Y			; Get Source Data
+	CPY TEMP+2				; Last Byte?
 	BEQ @length
 	STA __BUFFER_LOAD__+3,X	; Store Byte into Buffer
-	INY			; Next Byte
-	INX			; Next Byte in Buffer
+	INY						; Next Byte
+	INX						; Next Byte in Buffer
 	JMP @next
 @length:
-	TXA			; Get Length
+	TXA						; Get Length
 	SEC
-	SBC BUFFER_END		; Subtract Length from Buffer End
-	ORA VRAM_INCREMENT	; Add VRAM Increment and Repeat Flag
-	LDX BUFFER_END		; Set Index to Original End
+	SBC BUFFER_END			; Subtract Length from Buffer End
+	ORA VRAM_INCREMENT		; Add VRAM Increment and Repeat Flag
+	LDX BUFFER_END			; Set Index to Original End
 	STA __BUFFER_LOAD__+0,X	; Store Bytes Used into Buffer
-	AND #%00111111		; Remove VRAM Increment and Repeat Flag
+	AND #%00111111			; Remove VRAM Increment and Repeat Flag
 	JMP @end
 @repeat:
-	LDA (SOURCE),Y		; Get Source Data
+	LDA (SOURCE),Y			; Get Source Data
 	STA __BUFFER_LOAD__+3,X	; Store Byte into Buffer
-	LDA TEMP+2		; Set Data Length
-	ORA VRAM_INCREMENT	; Add VRAM Increment and Repeat Flag
-	LDX BUFFER_END		; Set Index to Original End
+	LDA TEMP+2				; Set Data Length
+	ORA VRAM_INCREMENT		; Add VRAM Increment and Repeat Flag
+	LDX BUFFER_END			; Set Index to Original End
 	STA __BUFFER_LOAD__+0,X	; Store Data Length into Buffer
-	LDA #$01		; Set To Bytes Used
+	LDA #$01				; Set To Bytes Used
 @end:
 	CLC
 	ADC BUFFER_END		; Add Bytes Used to Buffer End
-	ADC #$03		; Add VRAM Address and Length Bytes
+	ADC #$03			; Add VRAM Address and Length Bytes
 	STA BUFFER_LENGTH	; Store New Buffer Length
 	RTS
 

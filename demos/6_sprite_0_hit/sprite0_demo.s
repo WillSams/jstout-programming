@@ -26,27 +26,27 @@
 .define LEFT_BUTTON   %00000010
 .define RIGHT_BUTTON  %00000001
 
-SOFT_2000:	.res 1
-SOFT_2001:	.res 1
+SOFT_2000:		.res 1
+SOFT_2001:		.res 1
 VRAM_INCREMENT:	.res 1
-DRAW_FLAG:	.res 1
-YSCROLL:	.res 1
-XSCROLL:	.res 2
+DRAW_FLAG:		.res 1
+YSCROLL:		.res 1
+XSCROLL:		.res 2
 X_DIRECTION:	.res 1
-FADE:		.res 1
-JOYRAW1:	.res 1
-JOYRAW2:	.res 1
-JOYPRESS1:	.res 1
-JOYPRESS2:	.res 1
-JOYHELD1:	.res 1
-JOYHELD2:	.res 1
+FADE:			.res 1
+JOYRAW1:		.res 1
+JOYRAW2:		.res 1
+JOYPRESS1:		.res 1
+JOYPRESS2:		.res 1
+JOYHELD1:		.res 1
+JOYHELD2:		.res 1
 BUFFER_LENGTH:	.res 1
-BUFFER_END:	.res 1
-SOURCE:		.res 2
+BUFFER_END:		.res 1
+SOURCE:			.res 2
 VRAM_ADDRESS:	.res 2
-DRAW_WIDTH:	.res 1
+DRAW_WIDTH:		.res 1
 DRAW_HEIGHT:	.res 1
-TEMP:		.res 3
+TEMP:			.res 3
 
 ;===============================================================================
 .segment "SPRITE"
