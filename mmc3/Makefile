@@ -1,4 +1,4 @@
-OBJS= controller_demo.o 
-ROM = controller_demo
+OBJS= mmc3_demo.o 
+ROM = mmc3_demo
 
 include ../common.mk

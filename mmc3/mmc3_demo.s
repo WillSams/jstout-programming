@@ -1,3 +1,17 @@
+;===============================================================================
+.segment "HEADER"
+;=====================
+	.BYTE "NES", $1A	; NES^Z
+	.BYTE 1				; #16 KB PRG ROM Banks
+	.BYTE 2				; #8 KB CHR ROM Banks
+	.BYTE %01000001		; ROM Control Byte #1
+	.BYTE %00000000		; ROM Control Byte #2
+	.BYTE 0				; #8 KB PRG RAM Banks
+	.BYTE %00000000		; TV System
+
+;===============================================================================
+.segment "ZEROPAGE"
+;======================
 ; LOGIC VALUES
 .define TRUE	$01
 .define FALSE	$00
@@ -12,36 +26,35 @@
 .define LEFT_BUTTON   %00000010
 .define RIGHT_BUTTON  %00000001
 
-.ZEROPAGE
-SOFT_2000:	.res 1
-SOFT_2001:	.res 1
+SOFT_2000:		.res 1
+SOFT_2001:		.res 1
 VRAM_INCREMENT:	.res 1
-DRAW_FLAG:	.res 1
-YSCROLL:	.res 1
-XSCROLL:	.res 2
+DRAW_FLAG:		.res 1
+YSCROLL:		.res 1
+XSCROLL:		.res 2
 X_DIRECTION:	.res 1
-FADE:		.res 1
-JOYRAW1:	.res 1
-JOYRAW2:	.res 1
-JOYPRESS1:	.res 1
-JOYPRESS2:	.res 1
-JOYHELD1:	.res 1
-JOYHELD2:	.res 1
+FADE:			.res 1
+JOYRAW1:		.res 1
+JOYRAW2:		.res 1
+JOYPRESS1:		.res 1
+JOYPRESS2:		.res 1
+JOYHELD1:		.res 1
+JOYHELD2:		.res 1
 BUFFER_LENGTH:	.res 1
-BUFFER_END:	.res 1
-SOURCE:		.res 2
+BUFFER_END:		.res 1
+SOURCE:			.res 2
 VRAM_ADDRESS:	.res 2
-DRAW_WIDTH:	.res 1
+DRAW_WIDTH:		.res 1
 DRAW_HEIGHT:	.res 1
-TEMP:		.res 3
-X_DRAW:		.res 1
+TEMP:			.res 3
+X_DRAW:			.res 1
 TEMP_SCROLL:	.res 1
 
-ANIMATION:	.res 2
+ANIMATION:			.res 2
 SPRITE_ANIMATION:	.res 1
 SPRITE_FRAME_SUB:	.res 1
 SPRITE_FRAME:		.res 1
-SPRITE_Y:		.res 1
+SPRITE_Y:			.res 1
 SPRITE_X_SUB:		.res 1
 SPRITE_X_LO:		.res 1
 SPRITE_X_HI:		.res 1
@@ -49,42 +62,43 @@ SPRITE_X_DELTA:		.res 2
 SPRITE_ATTRIBUTE:	.res 1
 SPRITE_HEIGHT:		.res 1
 
-OAM_USED:	.res 1
+OAM_USED:		.res 1
 
-ENEMY_Y:	.res 1
-ENEMY_X_LO:	.res 1
-ENEMY_X_HI:	.res 1
-DISTANCE:	.res 2
+ENEMY_Y:		.res 1
+ENEMY_X_LO:		.res 1
+ENEMY_X_HI:		.res 1
+DISTANCE:		.res 2
 
-ROTATE:		.res 1
-COUNT:		.res 1
+ROTATE:			.res 1
+COUNT:			.res 1
 
+;===============================================================================
 .segment "SPRITE"
+;=====================
 .import __SPRITE_LOAD__
 MARIO:		.res 16
 GOOMBA:		.res 16
 
+;===============================================================================
 .segment "PALETTE"
+;=====================
 .import __PALETTE_LOAD__
 
+;===============================================================================
 .segment "BUFFER"
+;=====================
 .import __BUFFER_LOAD__
 
+;===============================================================================
 .segment "DATA"
+;=====================
 .import __DATA_LOAD__
-MARIO_DATA:	.res 11
+MARIO_DATA:		.res 11
 GOOMBA_DATA:	.res 11
 
-.segment "HEADER"
-	.BYTE "NES", $1A	; NES^Z
-	.BYTE 1			; #16 KB PRG ROM Banks
-	.BYTE 2			; #8 KB CHR ROM Banks
-	.BYTE %01000001		; ROM Control Byte #1
-	.BYTE %00000000		; ROM Control Byte #2
-	.BYTE 0			; #8 KB PRG RAM Banks
-	.BYTE %00000000		; TV System
-
+;===============================================================================
 .segment "BANK_00"
+;=====================
 Reset:
 	CLD			; Clear Decimal Mode (NES has no BCD)
 	SEI			; Disable IRQs
@@ -321,7 +335,7 @@ walkright:
 	BEQ @walk
 	JSR setWalking
 	LDA SPRITE_ATTRIBUTE	; Set Horizontal Flip Bit to Right
-	AND #~$40
+	AND #$40				;#~$40
 	STA SPRITE_ATTRIBUTE
 @walk:
 	LDA SPRITE_X_LO		; Move Right?
@@ -356,7 +370,7 @@ brakeright:
 	BEQ @braking
 	JSR setBraking
 	LDA SPRITE_ATTRIBUTE	; Set Horizontal Flip to Right
-	AND #~$40
+	AND #$40				;#~$40
 	STA SPRITE_ATTRIBUTE
 @braking:
 	LDA SPRITE_X_DELTA+0	; Decelerate Left Movement
@@ -1412,10 +1426,10 @@ buffer_attribute:
 	RTS
 
 title_name_table:
-	.incbin "SMBlevel1_0.bin"
+	.incbin "./resources/SMBlevel1_0.bin"
 
 title_attribute_table:
-	.incbin "SMBattrib.bin"
+	.incbin "./resources/SMBattrib.bin"
 
 ;--------------------;
 ; STATUS BAR SECTION ;
@@ -2148,16 +2162,23 @@ load_chr_banks:
 	STA $8001
 	RTS
 
+;===============================================================================
 .segment "BANK_01"
+;=====================
 
+;===============================================================================
 .segment "STARTS"
+;=====================
 Start:
 	LDA #%00000000		; Set to $C000 Fixed Mode
 	STA $8000
 	JMP Reset
 
+;===============================================================================
 .segment "VECTORS"
-	.WORD NMI, Start, IRQ
+;=====================
+	.WORD NMI, Reset, IRQ
 
+;===============================================================================
 .segment "GRAPHIC"
-	.incbin "mario2.chr"
+	.incbin "./resources/mario2.chr"
