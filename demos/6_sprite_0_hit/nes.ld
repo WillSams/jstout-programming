@@ -5,14 +5,14 @@ MEMORY {
 	RAM:    start = $0200, size = $0600, type = rw;
 
 	# NES Cartridge Header
-	HEADER: start = $0000, size = $0010, type = ro, file = "sprite0_demo.nes", fill = yes, fillval = $00;
+	HEADER: start = $0000, size = $0010, type = ro,  file = %O,, fill = yes, fillval = $00;
 
 	# Program Banks
-	BANK00: start = $C000, size = $2000, type = ro, file = "sprite0_demo.nes", fill = yes, fillval = $FF;
-	BANK01: start = $E000, size = $2000, type = ro, file = "sprite0_demo.nes", fill = yes, fillval = $FF;
+	BANK00: start = $C000, size = $2000, type = ro,  file = %O,, fill = yes, fillval = $FF;
+	BANK01: start = $E000, size = $2000, type = ro,  file = %O,, fill = yes, fillval = $FF;
 
 	# Character Banks
-	CHAR00: start = $0000, size = $2000, type = ro, file = "sprite0_demo.nes", fill = yes, fillval = $00;
+	CHAR00: start = $0000, size = $2000, type = ro,  file = %O,, fill = yes, fillval = $00;
 }
 
 SEGMENTS {
