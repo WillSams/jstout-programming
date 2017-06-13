@@ -1,17 +1,3 @@
-;===============================================================================
-.segment "HEADER"
-;=====================
-	.BYTE "NES", $1A	; NES^Z
-	.BYTE 1				; #16 KB PRG ROM Banks
-	.BYTE 1				; #8 KB CHR ROM Banks
-	.BYTE %00000001		; ROM Control Byte #1
-	.BYTE %00000000		; ROM Control Byte #2
-	.BYTE 0				; #8 KB PRG RAM Banks
-	.BYTE %00000000		; TV System
-
-;===============================================================================
-.segment "ZEROPAGE"
-;======================
 ; LOGIC VALUES
 .define TRUE	$01
 .define FALSE	$00
@@ -26,6 +12,7 @@
 .define LEFT_BUTTON   %00000010
 .define RIGHT_BUTTON  %00000001
 
+.ZEROPAGE
 SOFT_2000:	.res 1
 SOFT_2001:	.res 1
 VRAM_INCREMENT:	.res 1
@@ -48,6 +35,7 @@ DRAW_WIDTH:	.res 1
 DRAW_HEIGHT:	.res 1
 TEMP:		.res 3
 X_DRAW:		.res 1
+TEMP_SCROLL:	.res 1
 
 ANIMATION:	.res 2
 SPRITE_ANIMATION:	.res 1
@@ -68,34 +56,35 @@ ENEMY_X_LO:	.res 1
 ENEMY_X_HI:	.res 1
 DISTANCE:	.res 2
 
-;===============================================================================
+ROTATE:		.res 1
+COUNT:		.res 1
+
 .segment "SPRITE"
-;=====================
 .import __SPRITE_LOAD__
-ZERO:		.res 4
 MARIO:		.res 16
 GOOMBA:		.res 16
 
-;===============================================================================
 .segment "PALETTE"
-;=====================
 .import __PALETTE_LOAD__
 
-;===============================================================================
 .segment "BUFFER"
-;=====================
 .import __BUFFER_LOAD__
 
-;===============================================================================
 .segment "DATA"
-;=====================
 .import __DATA_LOAD__
-MARIO_DATA:		.res 11
+MARIO_DATA:	.res 11
 GOOMBA_DATA:	.res 11
 
-;===============================================================================
+.segment "HEADER"
+	.BYTE "NES", $1A	; NES^Z
+	.BYTE 1			; #16 KB PRG ROM Banks
+	.BYTE 2			; #8 KB CHR ROM Banks
+	.BYTE %01000001		; ROM Control Byte #1
+	.BYTE %00000000		; ROM Control Byte #2
+	.BYTE 0			; #8 KB PRG RAM Banks
+	.BYTE %00000000		; TV System
+
 .segment "BANK_00"
-;=====================
 Reset:
 	CLD			; Clear Decimal Mode (NES has no BCD)
 	SEI			; Disable IRQs
@@ -133,7 +122,7 @@ Reset:
 	JSR init_variables	; Initialize Variables
 	JSR init_graphics	; Initialize Screen
 	; Set PPU Control Registers.
-	LDA #%10010000		; NMI, BG $1000, Objects $0000, Name Base $2000
+	LDA #%10001000		; NMI, BG $0000, Objects $1000, Name Base $2000
 	STA $2000
 	STA SOFT_2000
 	LDA #%00011110		; Display BG and Objects
@@ -152,7 +141,7 @@ game_loop:
 	JSR updateGoomba
 	JSR collision_check
 	JSR scroll_check
-	LDA #$04
+	LDA #$00
 	STA OAM_USED
 	JSR clear_sprite
 	LDX #$00
@@ -332,7 +321,7 @@ walkright:
 	BEQ @walk
 	JSR setWalking
 	LDA SPRITE_ATTRIBUTE	; Set Horizontal Flip Bit to Right
-	AND #$40				; #~$40
+	AND #~$40
 	STA SPRITE_ATTRIBUTE
 @walk:
 	LDA SPRITE_X_LO		; Move Right?
@@ -367,7 +356,7 @@ brakeright:
 	BEQ @braking
 	JSR setBraking
 	LDA SPRITE_ATTRIBUTE	; Set Horizontal Flip to Right
-	AND #$40				; #~$40
+	AND #~$40
 	STA SPRITE_ATTRIBUTE
 @braking:
 	LDA SPRITE_X_DELTA+0	; Decelerate Left Movement
@@ -580,15 +569,19 @@ init_sound:
 	STA $4015
 	LDA #%01000000		; Disable Frame IRQS
 	STA $4017
+	STA $E000
 	RTS
 
 init_variables:
 	LDA #$00
 	STA YSCROLL		; Set Y Scroll
+	LDA #$00
 	STA XSCROLL+0		; Set X Scroll
 	STA XSCROLL+1
 	; Set Other Variables Here
 	STA FADE		; Set Fade
+	LDA #$08
+	STA ROTATE
 	RTS
 
 init_graphics:
@@ -597,6 +590,7 @@ init_graphics:
 	JSR load_title_sprites	; Load Title Sprites
 	JSR load_name_table	; Load Title Background
 	JSR load_status_bar	; Load Status Bar
+	JSR load_chr_banks	; Load Char Banks
 	RTS
 
 ;-----;
@@ -624,16 +618,98 @@ NMI:
 	LDA SOFT_2001		; Enable Screen
 	STA $2001
 	JSR update_scroll	; Update Scroll
-@done:	LDA #FALSE		; Set Draw Screen to Done
-	STA DRAW_FLAG
-	JSR update_joypad	; Update Joypads
+@done:	JSR update_joypad	; Update Joypads
 	; Return Values
 	PLA			; Pull Y
 	TAY
 	PLA			; Pull X
 	TAX
 	PLA			; Pull A
-IRQ:	RTI
+	RTI
+
+IRQ:
+	PHP			; Push P
+	PHA			; Push A
+	TXA			; Push X
+	PHA
+	TYA			; Push Y
+	PHA
+	LDA #$00
+	STA $E000		; Acknowledge IRQ
+	LDA DRAW_FLAG
+	CMP #TRUE
+	BNE @done
+	; Before HBlank
+	LDA XSCROLL+1		; Get Horizontal Name Table
+	LSR
+	LDA #$00		; Get Vertical Name Table
+	ROL
+	ASL
+	ASL
+	STA $2006		; Store %----NN--
+	LDA YSCROLL+0		; Get Vertical Scroll
+	CLC			; Skip Status Bar
+	ADC #$1F
+	STA $2005		; Store %YY---yyy (YY are the top 2 bits)
+	ASL
+	ASL
+	AND #%11100000
+	LDX XSCROLL+0		; Get Horizontal Scroll
+	STA XSCROLL+0
+	TXA
+	LSR
+	LSR
+	LSR
+	ORA XSCROLL+0
+	; Wait for HBlank
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	; During HBlank
+	STX $2005		; Store %-----xxx
+	STA $2006 		; Store %YYYXXXXX (YYY are the bottom 3 bits)
+  	STX XSCROLL+0		; Restore Value
+	LDA COUNT		; Change CHR Bank after 7 frames
+	AND #%00000111
+	CMP #%00000111
+	BNE @count
+	LDA #%10000011		; Swap 1 KB at $0400
+	STA $8000
+	LDA ROTATE		; Next CHR Bank
+	STA $8001
+	LDA ROTATE		; Update CHR Bank
+	CLC
+	ADC #$01
+	CMP #$0C
+	BNE @rotate		; Last CHR Bank?
+	LDA #$08
+@rotate:
+	STA ROTATE
+@count:
+	INC COUNT		; Next Frame
+	LDA #FALSE		; Set Draw Screen to Done
+	STA DRAW_FLAG
+@done:
+	PLA			; Pull Y
+	TAY
+	PLA			; Pull X
+	TAX
+	PLA			; Pull A
+	PLP			; Pull P
+	RTI
 
 ;-----------------;
 ; NMI SUBROUTINES ;
@@ -719,28 +795,10 @@ update_status:
 	RTS
 
 update_scroll:
-@hit:
-	BIT $2002		; Wait Until Sprite #0 Not Hit
-	BVS @hit
-@nothit:
-	BIT $2002		; Wait Until Sprite #0 Hit
-	BVC @nothit
-	LDX #$14		; Wait for End of Scanline
-@delay:
-	DEX
-	BNE @delay
-	LDA SOFT_2000
-	AND #%11111100
-	STA SOFT_2000
-	LDA XSCROLL+1
-	AND #%00000001
-	ORA SOFT_2000		; Set Name Table
-	STA SOFT_2000
-	STA $2000
-	LDA XSCROLL+0		; Set Vertical Scroll Offset
-	STA $2005
-	LDA YSCROLL		; Set Horizontal Scroll Offset
-	STA $2005
+	LDA #$1F		; IRQ at Scanline 31
+	STA $C000
+	STA $C001
+	STA $E001
 	RTS
 
 ;-----------------;
@@ -868,7 +926,6 @@ load_oam:
 	RTS
 
 title_sprites:
-	.BYTE $18,$FF,%00100011,$58	; Sprite #0
 	.BYTE $C0,$3A,%00000000,$28	; Mario
 	.BYTE $C0,$37,%00000000,$30
 	.BYTE $C8,$4F,%00000000,$28
@@ -1355,10 +1412,10 @@ buffer_attribute:
 	RTS
 
 title_name_table:
-	.incbin "./resources/SMBlevel1_0.bin"
+	.incbin "SMBlevel1_0.bin"
 
 title_attribute_table:
-	.incbin "./resources/SMBattrib.bin"
+	.incbin "SMBattrib.bin"
 
 ;--------------------;
 ; STATUS BAR SECTION ;
@@ -1674,7 +1731,6 @@ animation:
 clear_sprite:
 	; Clear OAM Buffer
 	LDY OAM_USED		; Set Index to First Byte
-	BEQ @exit
 	LDA #$F0		; Set Y Position to off-screen
 :	STA __SPRITE_LOAD__,Y	; Store Y Position in OAM Buffer
 	INY			; Set to next sprite
@@ -2059,15 +2115,49 @@ x_sprite_collision:
 @exit:
 	RTS
 
-;===============================================================================
+;--------------;
+; MMC3 SECTION ;
+;--------------;
+
+load_chr_banks:
+	; BACKGROUND CHR
+	LDA #%10000010
+	STA $8000
+	LDA #$00
+	STA $8001
+	LDA #%10000011
+	STA $8000
+	LDA #$01
+	STA $8001
+	LDA #%10000100
+	STA $8000
+	LDA #$02
+	STA $8001
+	LDA #%10000101
+	STA $8000
+	LDA #$03
+	STA $8001
+	; OAM CHR
+	LDA #%10000000
+	STA $8000
+	LDA #$04
+	STA $8001
+	LDA #%10000001
+	STA $8000
+	LDA #$06
+	STA $8001
+	RTS
+
 .segment "BANK_01"
-;=====================
 
-;===============================================================================
+.segment "STARTS"
+Start:
+	LDA #%00000000		; Set to $C000 Fixed Mode
+	STA $8000
+	JMP Reset
+
 .segment "VECTORS"
-;=====================
-	.WORD NMI, Reset, IRQ
+	.WORD NMI, Start, IRQ
 
-;===============================================================================
 .segment "GRAPHIC"
-	.incbin "./resources/mario.chr"
+	.incbin "mario2.chr"
