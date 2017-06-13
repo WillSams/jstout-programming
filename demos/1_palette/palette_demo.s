@@ -2,11 +2,11 @@
 .segment "HEADER"
 ;=====================
 	.BYTE "NES", $1A	; NES^Z
-	.BYTE 1			; #16 KB PRG ROM Banks
-	.BYTE 1			; #8 KB CHR ROM Banks
+	.BYTE 1				; #16 KB PRG ROM Banks
+	.BYTE 1				; #8 KB CHR ROM Banks
 	.BYTE %00000000		; ROM Control Byte #1
 	.BYTE %00000000		; ROM Control Byte #2
-	.BYTE 0			; #8 KB PRG RAM Banks
+	.BYTE 0				; #8 KB PRG RAM Banks
 	.BYTE %00000000		; TV System
 
 ;===============================================================================
@@ -44,8 +44,8 @@ TEMP:		.res 2
 .segment "BANK_00"
 ;=====================
 Reset:
-	CLD			; Clear Decimal Mode (NES has no BCD)
-	SEI			; Disable IRQs
+	CLD				; Clear Decimal Mode (NES has no BCD)
+	SEI				; Disable IRQs
 	LDX #$FF 		; Reset the Stack Pointer
 	TXS
 	; Clear the Work RAM ($0000-$07FF)
@@ -85,8 +85,8 @@ Reset:
 	STA SOFT_2000
 	LDA #%00011110		; Display BG and Objects
 	STA SOFT_2001
-	CLI			; Enable IRQs
-	LDA #TRUE		; Ready to Update Initial Screen
+	CLI					; Enable IRQs
+	LDA #TRUE			; Ready to Update Initial Screen
 	STA DRAW_FLAG
 :	LDA DRAW_FLAG		; Updated?
 	BNE :-
@@ -141,10 +141,10 @@ init_sound:
 
 init_variables:
 	LDA #$00
-	STA YSCROLL		; Set Y Scroll
-	STA XSCROLL		; Set X Scroll
+	STA YSCROLL			; Set Y Scroll
+	STA XSCROLL			; Set X Scroll
 	; Set Other Variables Here
-	STA FADE		; Set Fade
+	STA FADE			; Set Fade
 	RTS
 
 init_graphics:
@@ -154,12 +154,12 @@ init_graphics:
 
 NMI:
 	; Store Values
-	PHA			; Push A
-	TXA			; Push X
+	PHA					; Push A
+	TXA					; Push X
 	PHA
-	TYA			; Push Y
+	TYA					; Push Y
 	PHA
-	BIT $2002		; Acknowledge NMI and Reset $2005/$2006 Latch
+	BIT $2002			; Acknowledge NMI and Reset $2005/$2006 Latch
 	LDA DRAW_FLAG		; Check for Draw Screen Update
 	CMP #TRUE
 	BNE @done
@@ -175,11 +175,11 @@ NMI:
 @done:	LDA #FALSE		; Set Draw Screen to Done
 	STA DRAW_FLAG
 	; Return Values
-	PLA			; Pull Y
+	PLA					; Pull Y
 	TAY
-	PLA			; Pull X
+	PLA					; Pull X
 	TAX
-	PLA			; Pull A
+	PLA					; Pull A
 IRQ:	RTI
 
 ;-----------------;
@@ -194,24 +194,24 @@ update_oam:
 	RTS
 
 update_palette:
-	LDA SOFT_2000		; Set VRAM Increment to Across
+	LDA SOFT_2000			; Set VRAM Increment to Across
 	AND #%11111011
 	STA $2000
-	LDA #>$3F00		; Set Palette RAM Address
+	LDA #>$3F00				; Set Palette RAM Address
 	STA $2006
 	LDA #<$3F00
 	STA $2006
-	LDX #$00		; Set Index to First Color
+	LDX #$00				; Set Index to First Color
 :	LDA __PALETTE_LOAD__,X	; Get Color
-	AND #$F0		; Keep Color Hi Nibble (Brightness)
-	ORA FADE		; Set Fade Timer Lo Nibble
-	TAY			; Set as Index
+	AND #$F0				; Keep Color Hi Nibble (Brightness)
+	ORA FADE				; Set Fade Timer Lo Nibble
+	TAY						; Set as Index
 	LDA __PALETTE_LOAD__,X	; Load Color
-	AND #$0F		; Keep Color Lo Nibble
-	ORA PALETTE_FADE,Y	; Set Color Hi Nibble
-	STA $2007		; Store Color in Palette RAM
-	INX			; Next Color
-	CPX #$20		; Continue until Last Color
+	AND #$0F				; Keep Color Lo Nibble
+	ORA PALETTE_FADE,Y		; Set Color Hi Nibble
+	STA $2007				; Store Color in Palette RAM
+	INX						; Next Color
+	CPX #$20				; Continue until Last Color
 	BNE :-
 	RTS
 
@@ -222,9 +222,9 @@ update_vram:
 update_scroll:
 	LDA SOFT_2000		; Set Name Table
 	STA $2000
-	LDA XSCROLL		; Set Vertical Scroll Offset
+	LDA XSCROLL			; Set Vertical Scroll Offset
 	STA $2005
-	LDA YSCROLL		; Set Horizontal Scroll Offset
+	LDA YSCROLL			; Set Horizontal Scroll Offset
 	STA $2005
 	RTS
 
@@ -263,7 +263,7 @@ fade_in:
 	LDA #TRUE		; Ready to Update
 	STA DRAW_FLAG
 @wait:
-	LDA DRAW_FLAG		; Updated?
+	LDA DRAW_FLAG	; Updated?
 	BNE @wait
 	JMP fade_in		; Check Next Fade Time
 @done:
@@ -276,9 +276,9 @@ fade_out:
 	LDA #TRUE		; Ready to Update
 	STA DRAW_FLAG
 @wait:
-	LDA DRAW_FLAG		; Updated?
+	LDA DRAW_FLAG	; Updated?
 	BNE @wait
-	JMP fade_out		; Check Next Fade Timer
+	JMP fade_out	; Check Next Fade Timer
 @done:
 	RTS
 

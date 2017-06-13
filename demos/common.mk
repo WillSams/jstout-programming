@@ -1,6 +1,7 @@
 #cc65 is in my $PATH.  If it isn't in yours, adjust for your system
 AS	= ca65
 LD	= ld65 
+LDFLAGS = -C nes.ld -m $(ROM).map
 OBJDUMP = od65
 
 #put whatever emulator you use here.  Mednafen is in my $PATH, so...
@@ -11,10 +12,10 @@ BIN	= $(ROM).nes
 all:	$(BIN)
 
 clean:
-	rm -f $(BIN) && rm -f $(shell find . -name '*.o') 
+	rm -f $(BIN) && rm -f $(shell find . -name '*.o')  && rm -f *.map && rm -f *.dump
 
 $(BIN): $(OBJS)
-	$(LD) $< -o $@ -C nes.ld
+	$(LD) $(LDFLAGS) $< -o $@ 
 
 %.o: %.s 
 	$(AS) $< -o $@

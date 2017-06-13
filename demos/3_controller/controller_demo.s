@@ -62,8 +62,8 @@ TRIANGLE:	.res 4
 .segment "BANK_00"
 ;=====================
 Reset:
-	CLD			; Clear Decimal Mode (NES has no BCD)
-	SEI			; Disable IRQs
+	CLD				; Clear Decimal Mode (NES has no BCD)
+	SEI				; Disable IRQs
 	LDX #$FF 		; Reset the Stack Pointer
 	TXS
 	; Clear the Work RAM ($0000-$07FF)
@@ -114,24 +114,24 @@ alter_triangle:
 	LDA DRAW_FLAG		; Previous Updates Done?
 	BNE @wait
 @up:
-	LDA JOYRAW1		; Up Button?
+	LDA JOYRAW1			; Up Button?
 	AND #UP_BUTTON
 	BEQ @down
 	DEC TRIANGLE+0		; Move Sprite Y Up
 	JMP @left
 @down:
-	LDA JOYRAW1		; Down Button?
+	LDA JOYRAW1			; Down Button?
 	AND #DOWN_BUTTON
 	BEQ @left
 	INC TRIANGLE+0		; Move Sprite Y Down
 @left:
-	LDA JOYRAW1		; Left Button?
+	LDA JOYRAW1			; Left Button?
 	AND #LEFT_BUTTON
 	BEQ @right
 	DEC TRIANGLE+3		; Move Sprite X Left
 	JMP @a
 @right:
-	LDA JOYRAW1		; Up Button?
+	LDA JOYRAW1			; Right Button?
 	AND #RIGHT_BUTTON
 	BEQ @a
 	INC TRIANGLE+3		; Move Sprite X Right
@@ -146,7 +146,7 @@ alter_triangle:
 	TXA
 	AND #%00000011		; Get Sprite Palette
 	CLC
-	ADC #$01		; Next Palette
+	ADC #$01			; Next Palette
 	CMP #%00000100		; Past Palette 3?
 	BCC @store
 	LDA #%00000000		; Wrap to Palette 0
@@ -161,7 +161,7 @@ alter_triangle:
 	EOR #%10000000		; Flip Sprite Vertically
 	STA TRIANGLE+2		; Store Attributes
 @exit:
-	LDA #TRUE		; Ready to Update
+	LDA #TRUE			; Ready to Update
 	STA DRAW_FLAG
 	RTS
 
@@ -192,29 +192,29 @@ clear_vram:
 
 clear_oam:
 	; Clear OAM Buffer
-	LDY #$00		; Set Index to First Byte
-	LDA #$F0		; Set Y Position to off-screen
+	LDY #$00				; Set Index to First Byte
+	LDA #$F0				; Set Y Position to off-screen
 :	STA __SPRITE_LOAD__,Y	; Store Y Position in OAM Buffer
-	INY			; Set to next sprite
+	INY						; Set to next sprite
 	INY
 	INY
 	INY
-	BNE :-			; Last sprite?
+	BNE :-					; Last sprite?
 	RTS
 
 init_sound:
-	LDA #%00001111		; Enable Sound Channels
+	LDA #%00001111			; Enable Sound Channels
 	STA $4015
-	LDA #%01000000		; Disable Frame IRQS
+	LDA #%01000000			; Disable Frame IRQS
 	STA $4017
 	RTS
 
 init_variables:
 	LDA #$00
-	STA YSCROLL		; Set Y Scroll
-	STA XSCROLL		; Set X Scroll
+	STA YSCROLL				; Set Y Scroll
+	STA XSCROLL				; Set X Scroll
 	; Set Other Variables Here
-	STA FADE		; Set Fade
+	STA FADE				; Set Fade
 	RTS
 
 init_graphics:
@@ -229,33 +229,33 @@ init_graphics:
 
 NMI:
 	; Store Values
-	PHA			; Push A
-	TXA			; Push X
+	PHA						; Push A
+	TXA						; Push X
 	PHA
-	TYA			; Push Y
+	TYA						; Push Y
 	PHA
-	BIT $2002		; Acknowledge NMI and Reset $2005/$2006 Latch
-	LDA DRAW_FLAG		; Check for Draw Screen Update
+	BIT $2002				; Acknowledge NMI and Reset $2005/$2006 Latch
+	LDA DRAW_FLAG			; Check for Draw Screen Update
 	CMP #TRUE
 	BNE @done
 	; Update Screen
-	LDA #%00000000		; Forced Blank
+	LDA #%00000000			; Forced Blank
 	STA $2001
-	JSR update_oam		; Update OAM
-	JSR update_palette	; Update Palette RAM
-	JSR update_vram		; Update VRAM
-	JSR update_scroll	; Update Scroll
-	LDA SOFT_2001		; Enable Screen
+	JSR update_oam			; Update OAM
+	JSR update_palette		; Update Palette RAM
+	JSR update_vram			; Update VRAM
+	JSR update_scroll		; Update Scroll
+	LDA SOFT_2001			; Enable Screen
 	STA $2001
-@done:	LDA #FALSE		; Set Draw Screen to Done
+@done:	LDA #FALSE			; Set Draw Screen to Done
 	STA DRAW_FLAG
-	JSR update_joypad	; Update Joypads
+	JSR update_joypad		; Update Joypads
 	; Return Values
-	PLA			; Pull Y
+	PLA						; Pull Y
 	TAY
-	PLA			; Pull X
+	PLA						; Pull X
 	TAX
-	PLA			; Pull A
+	PLA						; Pull A
 IRQ:	RTI
 
 ;-----------------;
@@ -263,32 +263,32 @@ IRQ:	RTI
 ;-----------------;
 
 update_oam:
-	LDA #$00		; Set to first byte in OAM
+	LDA #$00				; Set to first byte in OAM
 	STA $2003
 	LDA #>__SPRITE_LOAD__	; Set to the OAM Buffer Memory Page
-	STA $4014		; DMA OAM Buffer to OAM
+	STA $4014				; DMA OAM Buffer to OAM
 	RTS
 
 
 update_palette:
-	LDA SOFT_2000		; Set VRAM Increment to Across
+	LDA SOFT_2000			; Set VRAM Increment to Across
 	AND #%11111011
 	STA $2000
-	LDA #>$3F00		; Set Palette RAM Address
+	LDA #>$3F00				; Set Palette RAM Address
 	STA $2006
 	LDA #<$3F00
 	STA $2006
-	LDX #$00		; Set Index to First Color
+	LDX #$00				; Set Index to First Color
 :	LDA __PALETTE_LOAD__,X	; Get Color
-	AND #$F0		; Keep Color Hi Nibble (Brightness)
-	ORA FADE		; Set Fade Timer Lo Nibble
-	TAY			; Set as Index
+	AND #$F0				; Keep Color Hi Nibble (Brightness)
+	ORA FADE				; Set Fade Timer Lo Nibble
+	TAY						; Set as Index
 	LDA __PALETTE_LOAD__,X	; Load Color
-	AND #$0F		; Keep Color Lo Nibble
-	ORA PALETTE_FADE,Y	; Set Color Hi Nibble
-	STA $2007		; Store Color in Palette RAM
-	INX			; Next Color
-	CPX #$20		; Continue until Last Color
+	AND #$0F				; Keep Color Lo Nibble
+	ORA PALETTE_FADE,Y		; Set Color Hi Nibble
+	STA $2007				; Store Color in Palette RAM
+	INX						; Next Color
+	CPX #$20				; Continue until Last Color
 	BNE :-
 	RTS
 
@@ -299,9 +299,9 @@ update_vram:
 update_scroll:
 	LDA SOFT_2000		; Set Name Table
 	STA $2000
-	LDA XSCROLL		; Set Vertical Scroll Offset
+	LDA XSCROLL			; Set Vertical Scroll Offset
 	STA $2005
-	LDA YSCROLL		; Set Horizontal Scroll Offset
+	LDA YSCROLL			; Set Horizontal Scroll Offset
 	STA $2005
 	RTS
 
@@ -342,7 +342,7 @@ fade_in:
 @wait:
 	LDA DRAW_FLAG		; Updated?
 	BNE @wait
-	JMP fade_in		; Check Next Fade Time
+	JMP fade_in			; Check Next Fade Time
 @done:
 	RTS
 
@@ -377,23 +377,23 @@ load_title_sprites:
 	RTS
 
 load_oam:
-	STX TEMP+0		; Store Source Lo Byte
-	STY TEMP+1		; Store Source Hi Byte
-	STA TEMP+2		; Store Source Length
+	STX TEMP+0				; Store Source Lo Byte
+	STY TEMP+1				; Store Source Hi Byte
+	STA TEMP+2				; Store Source Length
 	; Clear OAM Buffer
 	LDY #$00
-	LDA #$F0		; Set Y Position to off-screen
+	LDA #$F0				; Set Y Position to off-screen
 :	STA __SPRITE_LOAD__,Y	; Store Y Position in OAM Buffer
-	INY			; Set to next sprite
+	INY						; Set to next sprite
 	INY
 	INY
 	INY
-	BNE :-			; Last sprite?
+	BNE :-					; Last sprite?
 	; Load Sprites into OAM Buffer
-:	LDA (TEMP),Y		; Get Sprite Attribute
+:	LDA (TEMP),Y			; Get Sprite Attribute
 	STA __SPRITE_LOAD__,Y	; Store in OAM Buffer
-	INY			; Next Sprite Attribute
-	CPY TEMP+2		; Last Sprite Attribute?
+	INY						; Next Sprite Attribute
+	CPY TEMP+2				; Last Sprite Attribute?
 	BNE :-
 	RTS
 
