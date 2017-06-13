@@ -1,7 +1,6 @@
 ;===============================================================================
 .segment "HEADER"
 ;=====================
-.segment "HEADER"
 	.BYTE "NES", $1A	; NES^Z
 	.BYTE 1				; #16 KB PRG ROM Banks
 	.BYTE 1				; #8 KB CHR ROM Banks
@@ -576,7 +575,6 @@ load_vram:
 	BNE @next
 	RTS
 
-
 title_name_table:
 	.BYTE $00,$20
 	.BYTE $24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24,$24
@@ -680,7 +678,7 @@ message_color:
 	.BYTE %10100000,%10100000,%10100000,%00100000
 message_color_end:
 
-restore:			; REPEAT
+restore:				; REPEAT
 	.BYTE $24
 
 restore_color:			; REPEAT
