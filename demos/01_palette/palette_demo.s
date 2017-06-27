@@ -16,7 +16,6 @@
 .define TRUE	$01
 .define FALSE	$00
 
-.ZEROPAGE
 SOFT_2000:	.res 1
 SOFT_2001:	.res 1
 DRAW_FLAG:	.res 1

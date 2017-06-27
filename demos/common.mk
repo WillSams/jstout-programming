@@ -30,5 +30,5 @@ run:
 
 #I'm on Linux, so I moved fceux Windows version in my projects path.  Linux version doesn't have debugger
 debug:
-	~/Projects/6502/famicom/a_tools/fceuxw/fceux.exe ./$(BIN)
+	~/Projects/nes/a_tools/fceuxw/fceux.exe ./$(BIN)
 
