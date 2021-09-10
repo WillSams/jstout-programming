@@ -16,7 +16,7 @@
 	; ||||+---- 1: Ignore mirroring control or above mirroring bit; instead provide four-screen VRAM
 	; ++++----- Lower nybble of mapper number.  Note:  this can impact values used for PRG and CHR bytes
 	;============================================================================================	
-	.BYTE %00000010		; iNES flag 6
+	.BYTE %00000000		; iNES flag 6
 
 ;===============================================================================
 .segment "ZEROPAGE"
