@@ -21,6 +21,7 @@ A name table is a tile map in VRAM with each byte representing a tile number fro
 
 The NES has 4 name tables but only enough internal memory to be able to use 2 name tables.  The NES cartridge is setup to have either vertical mirroring or horizontal mirroring (note: mappers can allow a game to change mirroring or add RAM allowing all 4 name tables).  Vertical mirroring makes name table 0 ($2000-$23BF) and name table 2 ($2800-$2BBF) the same and name table 1 ($2400-$27BF) and name table 3 ($2C00-$2FBF) the same.  Horizontal mirroring makes name table 0 ($2000-$23BF) and name table 1 ($2400-$27BF) the same and name table 2 ($2800-$2BBF) and name table 3 ($2C00-$2FBF) the same.  A classic game that uses vertical mirroring is Super Mario Bros. and a classic game that uses horizontal mirroring is Ice Climber.
 
+```text
 +----------------+----------------+
 |                |                |
 |                |                |
@@ -38,6 +39,7 @@ The NES has 4 name tables but only enough internal memory to be able to use 2 na
 |                |                |
 |                |                |
 +----------------+----------------+
+```
 
 
 ## Attribute Tables
