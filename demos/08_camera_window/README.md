@@ -10,7 +10,7 @@ A platform game like Super Mario Bros. has a narrow horizontal window snapped on
 
 A sports game like Tecmo Super Bowl has a wide horizontal window snapped onto the location of the football like the image below.  The purpose is that most action will occur in the window but we need some room out in front to view incoming tacklers as we move upfield.
 
-![""](../../docs/images/trap-02.png "PPU Memory Map")
+![""](../../docs/images/trap-02.png "Sports Game")
 
 The scroll movement in the game loop will change to handle the window instead of moving with the controller.
 
