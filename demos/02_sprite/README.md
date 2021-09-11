@@ -15,7 +15,7 @@ STA $4014; OAM DMA will copy $200-$2FF in RAM into OAM
 
 ## Sprite Attributes
 
-- Each sprite is made up of 4 bytes.
+Each sprite is made up of 4 bytes.
 
 ```text
 Byte 1 = Y Position
@@ -30,12 +30,12 @@ For 8x16 Sprites: %76543210
 
 Byte 3 = Attributes
 %76543210
-||||||||
-||||||++- Palette (00 = Palette 0, 01 = Palette 1, 10 = Palette 2, 11 = Palette 3
-|||+++--- Unimplemented
-||+------ Priority (0 = In front of BG, 1 = Behind BG)
-|+------- Flip Horizontally (0 = No Flip, 1 = Flip)
-+-------- Flip Vertically (0 = No Flip, 1 = Flip)
+ ||||||||
+ ||||||++- Palette (00 = Palette 0, 01 = Palette 1, 10 = Palette 2, 11 = Palette 3
+ |||+++--- Unimplemented
+ ||+------ Priority (0 = In front of BG, 1 = Behind BG)
+ |+------- Flip Horizontally (0 = No Flip, 1 = Flip)
+ +-------- Flip Vertically (0 = No Flip, 1 = Flip)
 
 Byte 4 = X Position
 #$00 = Left to #$FF = Right

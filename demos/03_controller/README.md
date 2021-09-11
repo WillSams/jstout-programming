@@ -2,7 +2,7 @@
 
 The standard NES controller has a directional pad with Select, Start, A, and B buttons.
 
-## Strobing:
+## Strobing
 
 Strobing allows the NES to load the current state of the buttons into a shift register then disabling the reloading of the shift register so we can read the state of the buttons.  We do this by writing 1 then 0 to $4016 (this strobes both controller 1 and 2).
 
@@ -15,13 +15,16 @@ Strobing allows the NES to load the current state of the buttons into a shift re
 
 ## Output
 
-We read the state of the buttons by reading $4016 for controller 1 and $4017 for controller 2.  Each read will get the state of a button with the 0 bit set as 0 not pressed or 1 pressed: 
-% 76543210
-  ||||||||
-  |||||||+- Serial Controller Data
-  ||||||+-- Famicon Expansion Port Data
-  |||+++--- Always 0
-  +++------ Open Bus
+We read the state of the buttons by reading $4016 for controller 1 and $4017 for controller 2.  Each read will get the state of a button with the 0 bit set as 0 not pressed or 1 pressed:
+
+```text
+%76543210
+ ||||||||
+ |||||||+- Serial Controller Data
+ ||||||+-- Famicon Expansion Port Data
+ |||+++--- Always 0
+ +++------ Open Bus
+ ```
 
 First Read:   A Button
 Second Read:  B Button
