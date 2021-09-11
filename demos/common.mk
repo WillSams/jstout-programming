@@ -1,11 +1,17 @@
 #!/bin/sh
 
+
+BIN	= $(ROM).nes
+
 AS	= ca65
 LD	= ld65 
-LDFLAGS = -C nes.ld -m $(ROM).map
+
+LDFLAGS = -C nes.cfg -m $(ROM).map
 OBJDUMP = od65
 DEBUGGER = fceux
-BIN	= $(ROM).nes
+
+SS=$(wildcard *.s)
+OBJS=$(SS:.s=.o)
 
 all:	$(BIN)
 
@@ -22,5 +28,5 @@ dump:
 	$(OBJDUMP) --dump-all $(OBJS) > $(ROM).dump
 
 run:
-	$(DEBUGGER) ./$(BIN) 
+	$(DEBUGGER) ./$(BIN)
 
