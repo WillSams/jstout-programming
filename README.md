@@ -6,17 +6,17 @@ This is still a work-in-progress as I will eventually get around to replacing th
 
 ## Building the Demos
 
-I use the assembler/linker provided by the [cc65 compiler][3] and [FCEUX][6] for debugging.  Install both on Debian-based distros (or, on Windows via WSL) by simply executing:
+I use the assembler/linker provided by the [cc65 compiler][3], [Mesen][6] for debugging, and [NES Extract][7] for extracting PRG/CHR.  Before compiling on Debian-based distros (or, on Windows via WSL), ensure you have the below packages installed:
 
 ```bash
-sudo apt install cc65 fceux
+sudo apt install cc65 build-essential make
 ```
 
 Each demo will have to be compiled individually.  Just execute `make` within the directory of the demo's corresponding make file.
 
 ## Editing
 
-Not a requirement, but the code editor I use is [Visual Studio Code][4] with the Cole Campbell's [language support extension][5].  To install Visual Studio Code (again, on Debian-based distros or Windows WSL), execute:
+Not a requirement, but the code editor I use is [Visual Studio Code][4] with the Cole Campbell's [language support extension][5].  To install Visual Studio Code on Debian-based distros, execute:
 
 ```bash
 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
@@ -35,4 +35,5 @@ source ~/.bashrc
 [3]: https://cc65.github.io/index.html
 [4]: https://code.visualstudio.com
 [5]: https://github.com/tlgkccampbell/code-ca65
-[6]: https://fceux.com/web/home.html
+[6]: https://mesen.ca/
+[7]: https://github.com/WillSams/Nes-Extract
