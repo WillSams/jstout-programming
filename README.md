@@ -9,7 +9,7 @@ This is still a work-in-progress as I will eventually get around to replacing th
 I use the assembler/linker provided by the [cc65 compiler][3], [Mesen][6] for debugging, and [NES Extract][7] for extracting PRG/CHR.  Before compiling on Debian-based distros (or, on Windows via WSL), ensure you have the below packages installed:
 
 ```bash
-sudo apt install cc65 build-essential make
+sudo apt install cc65 build-essential
 ```
 
 Each demo will have to be compiled individually.  Just execute `make` within the directory of the demo's corresponding make file.
