@@ -41,7 +41,6 @@ The NES has 4 name tables but only enough internal memory to be able to use 2 na
 +----------------+----------------+
 ```
 
-
 ## Attribute Tables
 
 An attribute table is a color table for the tile map in VRAM with each byte coloring a 4x4 tile square (32x32 pixels).
@@ -70,24 +69,24 @@ In the reset routine we need to clear the name and attribute tables and write th
 
 ```nasm
 clear_vram:
-	LDA SOFT_2000      ; Get $2000 Register Settings
-	AND #%11111011      ; Set VRAM Increment to Across
-	STA $2000	      ; Store $2000 Register Settings
-	LDA #>$2400	      ; VRAM Address Hi Byte
-	STA $2006	      ; Store VRAM Address Hi Byte
-	LDA #<$2400	      ; VRAM Address Lo Byte
-	STA $2006	      ; Store VRAM Address Lo Byte
+  LDA SOFT_2000      ; Get $2000 Register Settings
+  AND #%11111011      ; Set VRAM Increment to Across
+  STA $2000        ; Store $2000 Register Settings
+  LDA #>$2400        ; VRAM Address Hi Byte
+  STA $2006        ; Store VRAM Address Hi Byte
+  LDA #<$2400        ; VRAM Address Lo Byte
+  STA $2006        ; Store VRAM Address Lo Byte
       ; Clear the Name and Attribute Tables at $2400 and $2800
       ; Mirroring will Clear the Tables at $2000 and $2C00
-	LDX #>$0800	      ; Set Index Length Hi Byte
-	LDY #<$0800	      ; Set Index Length Lo Byte
-	LDA #$00	      ; Clear Data
-:	STA $2007	      ; Store Data in VRAM
-	INY		      ; Next Lo Byte
-	BNE :-	      ; Increase Hi Byte?
-	DEX		      ; Next Hi Byte
-	BNE :-	      ; Done?
-	RTS
+  LDX #>$0800        ; Set Index Length Hi Byte
+  LDY #<$0800        ; Set Index Length Lo Byte
+  LDA #$00        ; Clear Data
+:  STA $2007        ; Store Data in VRAM
+  INY          ; Next Lo Byte
+  BNE :-        ; Increase Hi Byte?
+  DEX          ; Next Hi Byte
+  BNE :-        ; Done?
+  RTS
 ```
 
 Reset/Forced Blank:
@@ -96,48 +95,48 @@ In forced blank, we can write directly to VRAM for as long as we need.
 
 ```nasm
 load_title_vram:
-	LDX #<title_vram	      ; Source Lo Byte
-	LDY #>title_vram	      ; Source Hi Byte
-	JSR load_vram
-	RTS
+  LDX #<title_vram        ; Source Lo Byte
+  LDY #>title_vram        ; Source Hi Byte
+  JSR load_vram
+  RTS
 
 load_vram:
-	STX TEMP+0		      ; Store Source Lo
-	STY TEMP+1		      ; Store Source Hi
-	LDY #$00		      ; Set to First Byte of Source Address
+  STX TEMP+0          ; Store Source Lo
+  STY TEMP+1          ; Store Source Hi
+  LDY #$00          ; Set to First Byte of Source Address
 @next:
-	INY			      ; Set to VRAM Address Hi Byte
-	LDA (TEMP),Y	      ; Get VRAM Address Hi Byte
-	AND #%11000000	      ; Get VRAM Increment Flag
-	STA VRAM_INCREMENT      ; Store VRAM Increment Flag
-	LDA SOFT_2000	      ; Get $2000 Settings
-	AND #%11111011	      ; Set VRAM Increment to Across
-	BIT VRAM_INCREMENT      ; Check VRAM Increment Flag
-	BPL @inc
-	ORA #%00000100	      ; Set VRAM Increment to Down
+  INY            ; Set to VRAM Address Hi Byte
+  LDA (TEMP),Y        ; Get VRAM Address Hi Byte
+  AND #%11000000        ; Get VRAM Increment Flag
+  STA VRAM_INCREMENT      ; Store VRAM Increment Flag
+  LDA SOFT_2000        ; Get $2000 Settings
+  AND #%11111011        ; Set VRAM Increment to Across
+  BIT VRAM_INCREMENT      ; Check VRAM Increment Flag
+  BPL @inc
+  ORA #%00000100        ; Set VRAM Increment to Down
 @inc:
-	STA $2000		      ; Store VRAM Increment
-	LDA (TEMP),Y	      ; Get VRAM Address Hi Byte
-	AND #%00111111	      ; Remove VRAM Increment Flag
-	STA $2006		      ; Store VRAM Address Hi Byte
-	DEY
-	LDA (TEMP),Y	      ; Get VRAM Address Lo Byte
-	STA $2006		      ; Store VRAM Address Lo Byte
-	INY			      ; Set Y to Source Data
-	INY
+  STA $2000          ; Store VRAM Increment
+  LDA (TEMP),Y        ; Get VRAM Address Hi Byte
+  AND #%00111111        ; Remove VRAM Increment Flag
+  STA $2006          ; Store VRAM Address Hi Byte
+  DEY
+  LDA (TEMP),Y        ; Get VRAM Address Lo Byte
+  STA $2006          ; Store VRAM Address Lo Byte
+  INY            ; Set Y to Source Data
+  INY
 @store:
-	LDA (TEMP),Y	      ; Get Source Data
-	CMP #$FE		      ; Check for Control Bytes
-	BCS @end
-	STA $2007		      ; Store Byte into VRAM
-	INY			      ; Next Byte
-	BNE @store		      ; Wrap?
-	INC TEMP+1		      ; Increase Source Hi Byte
-	JMP @store
+  LDA (TEMP),Y        ; Get Source Data
+  CMP #$FE          ; Check for Control Bytes
+  BCS @end
+  STA $2007          ; Store Byte into VRAM
+  INY            ; Next Byte
+  BNE @store          ; Wrap?
+  INC TEMP+1          ; Increase Source Hi Byte
+  JMP @store
 @end:
-	CMP #$FF		      ; Check for End Control Byte
-	BNE @next
-	RTS
+  CMP #$FF          ; Check for End Control Byte
+  BNE @next
+  RTS
 ```
 
 ## Game Loop
@@ -159,53 +158,53 @@ Byte 4+: Data
 
 ```nasm
 buffer_vram:
-	STX TEMP+0		      ; Store VRAM Address Lo
-	STY TEMP+1		      ; Store VRAM Address Hi
-	STA TEMP+2  	      ; Store Source Length
-	LDX BUFFER_LENGTH	      ; Get Current Buffer Length
-	STX BUFFER_END	      ; Store X as Buffer End
-	LDA TEMP+0		      ; Get VRAM Address Lo Byte
-	STA BUFFER+1,X	      ; Store VRAM Address Lo Byte in Buffer
-	LDA TEMP+1		      ; Get VRAM Address Hi Byte
-	AND #%11000000	      ; Get VRAM Increment and Repeat Flag
-	STA VRAM_INCREMENT      ; Store VRAM Increment and Repeat Flag
-	LDA TEMP+1		      ; Get VRAM Address Hi Byte
-	AND #%00111111	      ; Remove VRAM Increment and Repeat Flag
-	STA BUFFER+2,X	      ; Store VRAM Address Hi Byte in Buffer
-	LDY #$00		      ; Set to First Byte of Source Address
-	BIT VRAM_INCREMENT      ; Check for Repeat Flag
-	BVS @repeat
+  STX TEMP+0          ; Store VRAM Address Lo
+  STY TEMP+1          ; Store VRAM Address Hi
+  STA TEMP+2          ; Store Source Length
+  LDX BUFFER_LENGTH        ; Get Current Buffer Length
+  STX BUFFER_END        ; Store X as Buffer End
+  LDA TEMP+0          ; Get VRAM Address Lo Byte
+  STA BUFFER+1,X        ; Store VRAM Address Lo Byte in Buffer
+  LDA TEMP+1          ; Get VRAM Address Hi Byte
+  AND #%11000000        ; Get VRAM Increment and Repeat Flag
+  STA VRAM_INCREMENT      ; Store VRAM Increment and Repeat Flag
+  LDA TEMP+1          ; Get VRAM Address Hi Byte
+  AND #%00111111        ; Remove VRAM Increment and Repeat Flag
+  STA BUFFER+2,X        ; Store VRAM Address Hi Byte in Buffer
+  LDY #$00          ; Set to First Byte of Source Address
+  BIT VRAM_INCREMENT      ; Check for Repeat Flag
+  BVS @repeat
 @next:
-	LDA (SOURCE),Y	      ; Get Source Data
-	CPY TEMP+2		      ; Last Byte?
-	BEQ @length
-	STA BUFFER+3,X	      ; Store Byte into Buffer
-	INY			      ; Next Byte
-	INX			      ; Next Byte in Buffer
-	JMP @next
+  LDA (SOURCE),Y        ; Get Source Data
+  CPY TEMP+2          ; Last Byte?
+  BEQ @length
+  STA BUFFER+3,X        ; Store Byte into Buffer
+  INY            ; Next Byte
+  INX            ; Next Byte in Buffer
+  JMP @next
 @length:
-	TXA			      ; Get Length
-	SEC
-	SBC BUFFER_END	      ; Subtract Length from Buffer End
-	ORA VRAM_INCREMENT      ; Add VRAM Increment and Repeat Flag
-	LDX BUFFER_END	      ; Set Index to Original End
-	STA BUFFER+0,X	      ; Store Bytes Used into Buffer
-	AND #%00111111	      ; Remove VRAM Increment and Repeat Flag
-	JMP @end
+  TXA            ; Get Length
+  SEC
+  SBC BUFFER_END        ; Subtract Length from Buffer End
+  ORA VRAM_INCREMENT      ; Add VRAM Increment and Repeat Flag
+  LDX BUFFER_END        ; Set Index to Original End
+  STA BUFFER+0,X        ; Store Bytes Used into Buffer
+  AND #%00111111        ; Remove VRAM Increment and Repeat Flag
+  JMP @end
 @repeat:
-	LDA (SOURCE),Y	      ; Get Source Data
-	STA BUFFER+3,X	      ; Store Byte into Buffer
-	LDA TEMP+2		      ; Set Data Length
-	ORA VRAM_INCREMENT      ; Add VRAM Increment and Repeat Flag
-	LDX BUFFER_END	      ; Set Index to Original End
-	STA BUFFER+0,X	      ; Store Data Length into Buffer
-	LDA #$01		      ; Set to Bytes Used
+  LDA (SOURCE),Y        ; Get Source Data
+  STA BUFFER+3,X        ; Store Byte into Buffer
+  LDA TEMP+2          ; Set Data Length
+  ORA VRAM_INCREMENT      ; Add VRAM Increment and Repeat Flag
+  LDX BUFFER_END        ; Set Index to Original End
+  STA BUFFER+0,X        ; Store Data Length into Buffer
+  LDA #$01          ; Set to Bytes Used
 @end:
-	CLC
-	ADC BUFFER_END	      ; Add Bytes Used to Buffer End
-	ADC #$03		      ; Add VRAM Address and Length Bytes
-	STA BUFFER_LENGTH	      ; Store New Buffer Length
-	RTS
+  CLC
+  ADC BUFFER_END        ; Add Bytes Used to Buffer End
+  ADC #$03          ; Add VRAM Address and Length Bytes
+  STA BUFFER_LENGTH        ; Store New Buffer Length
+  RTS
 ```
 
 ## NMI
@@ -214,43 +213,43 @@ In the NMI, we want to update the Name and Attribute Tables with our buffer.
 
 ```nasm
 update_vram:
-	LDA #$00		      ; Set to Clear
-	LDX BUFFER_LENGTH	      ; Get Buffer Length
-	STA BUFFER+0,X	      ; Store 0 at End
-	STA BUFFER_LENGTH	      ; Clear Buffer Length
-	TAY			      ; Set to First Byte in Buffer
+  LDA #$00          ; Set to Clear
+  LDX BUFFER_LENGTH        ; Get Buffer Length
+  STA BUFFER+0,X        ; Store 0 at End
+  STA BUFFER_LENGTH        ; Clear Buffer Length
+  TAY            ; Set to First Byte in Buffer
 @next:
-	LDA BUFFER+0,Y	      ; Get Data Length
-	BEQ @end		      ; End?
-	STA VRAM_INCREMENT      ; Get VRAM Increment Flag and Repeat Flag
-	AND #%00111111	      ; Remove VRAM Increment Flag and Repeat Flag
-	TAX			      ; Set X to Data Length
-	LDA SOFT_2000	      ; Get $2000 Settings
-	AND #%11111011	      ; Set VRAM Increment to Across
-	BIT VRAM_INCREMENT      ; Check VRAM Increment Flag
-	BPL @inc
-	ORA #%00000100	      ; Set VRAM Increment to Down
+  LDA BUFFER+0,Y        ; Get Data Length
+  BEQ @end          ; End?
+  STA VRAM_INCREMENT      ; Get VRAM Increment Flag and Repeat Flag
+  AND #%00111111        ; Remove VRAM Increment Flag and Repeat Flag
+  TAX            ; Set X to Data Length
+  LDA SOFT_2000        ; Get $2000 Settings
+  AND #%11111011        ; Set VRAM Increment to Across
+  BIT VRAM_INCREMENT      ; Check VRAM Increment Flag
+  BPL @inc
+  ORA #%00000100        ; Set VRAM Increment to Down
 @inc:
-	STA $2000		      ; Store VRAM Increment
-	LDA BUFFER+2,Y	      ; Get VRAM Address Hi Byte
-	STA $2006		      ; Store VRAM Address Hi Byte
-	LDA BUFFER+1,Y	      ; Get VRAM Address Lo Byte
-	STA $2006		      ; Store VRAM Address Lo Byte
-	INY			      ; Set Y + 3 to First Data Byte
-	INY
+  STA $2000          ; Store VRAM Increment
+  LDA BUFFER+2,Y        ; Get VRAM Address Hi Byte
+  STA $2006          ; Store VRAM Address Hi Byte
+  LDA BUFFER+1,Y        ; Get VRAM Address Lo Byte
+  STA $2006          ; Store VRAM Address Lo Byte
+  INY            ; Set Y + 3 to First Data Byte
+  INY
 ; Store Data in VRAM (V clear = X Data, V set = repeat Data X times)
-	BVC @loop		      ; Check Repeat Flag
-	INY
+  BVC @loop          ; Check Repeat Flag
+  INY
 @loop:
-	BVS @store		      ; Repeat?
-	INY
+  BVS @store          ; Repeat?
+  INY
 @store:
-	LDA BUFFER+0,Y	      ; Get Data
-	STA $2007		      ; Store Data in VRAM
-	DEX			      ; Next Byte
-	BNE @loop
-	INY			      ; Check Next in Buffer
-	JMP @next
+  LDA BUFFER+0,Y        ; Get Data
+  STA $2007          ; Store Data in VRAM
+  DEX            ; Next Byte
+  BNE @loop
+  INY            ; Check Next in Buffer
+  JMP @next
 @end:
-	RTS
+  RTS
 ```

@@ -133,31 +133,31 @@ xxx = Fine Horizontal Scroll        yyy = Fine Vertical Scroll
 ```
 
 ```nasm
-	; DO BEFORE HBLANK
-	LDA XSCROLL+1	; Get Horizontal Name Table
-	LSR
-	LDA YSCROLL+1	; Get Vertical Name Table
-	ROL
-	ASL
-	ASL
-	STA $2006		; Store %----NN--
-	LDA YSCROLL+0	; Get Vertical Scroll
-	STA $2005		; Store %YY---yyy (YY are the top 2 bits)
-	ASL
-	ASL
-	AND #%11100000
-	LDX XSCROLL+0	; Get Horizontal Scroll
-	STA XSCROLL+0
-	TXA
-	LSR
-	LSR
-	LSR
-	ORA XSCROLL+0
-	; USE THIS SPACE TO WASTE TIME UNTIL HBLANK
-	; DO DURING HBLANK
-	STX $2005		; Store %-----xxx
-	STA $2006 		; Store %YYYXXXXX (YYY are the bottom 3 bits)
-  	STX XSCROLL+0	; Restore Value
+  ; DO BEFORE HBLANK
+  LDA XSCROLL+1  ; Get Horizontal Name Table
+  LSR
+  LDA YSCROLL+1  ; Get Vertical Name Table
+  ROL
+  ASL
+  ASL
+  STA $2006    ; Store %----NN--
+  LDA YSCROLL+0  ; Get Vertical Scroll
+  STA $2005    ; Store %YY---yyy (YY are the top 2 bits)
+  ASL
+  ASL
+  AND #%11100000
+  LDX XSCROLL+0  ; Get Horizontal Scroll
+  STA XSCROLL+0
+  TXA
+  LSR
+  LSR
+  LSR
+  ORA XSCROLL+0
+  ; USE THIS SPACE TO WASTE TIME UNTIL HBLANK
+  ; DO DURING HBLANK
+  STX $2005    ; Store %-----xxx
+  STA $2006     ; Store %YYYXXXXX (YYY are the bottom 3 bits)
+    STX XSCROLL+0  ; Restore Value
 ```
 
 ## CHR Banks Switch

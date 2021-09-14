@@ -81,78 +81,78 @@ The following code is finding a collision on the left or right side of two bound
 
 ```nasm
 x_sprite_collision:
-	LDA ENEMY			; Get Sprite 2 Data Location
-	ASL
-	TAY
-	LDA datalocations+0,Y
-	STA TEMP+0
-	LDA datalocations+1,Y
-	STA TEMP+1
-@y:					; Check Y Non-Collision
-	LDY #$03			; Get Sprite 2 Y Data
-	LDA (TEMP),Y
-	STA ENEMY_Y			; Sprite 2 Y Lo
-	; Compare Bounding Boxes of Sprite 1 and Sprite 2 Vertically
-	LDA SPRITE_Y		; Sprite 1 Y location compared to Sprite 2 Y
-	CMP ENEMY_Y
-	BCS @bottom
-@top:					; Check Sprite 1 Bot Y < Sprite 2 Top Y
-	LDA ENEMY_Y
-	SEC
-	SBC SPRITE_Y
-	CMP #$10			; Y Bounding Box Size of Sprite 1
-	BCS @exit			; Possible Collision?
-	JMP @x
-@bottom:				; Check Sprite 1 Top Y > Sprite 2 Bot Y
-	LDA SPRITE_Y
-	SEC
-	SBC ENEMY_Y
-	CMP #$10			; Y Bounding Box Size of Sprite 2
-	BCS @exit			; Possible Collision?
-@x:					; Check for X Non-Collision
-	LDY #$05			; Get Sprite 2 X Data
-	LDA (TEMP),Y
-	STA ENEMY_X_LO		; Sprite 2 X Lo
-	INY
-	LDA (TEMP),Y
-	STA ENEMY_X_HI		; Sprite 2 X Hi
+  LDA ENEMY      ; Get Sprite 2 Data Location
+  ASL
+  TAY
+  LDA datalocations+0,Y
+  STA TEMP+0
+  LDA datalocations+1,Y
+  STA TEMP+1
+@y:          ; Check Y Non-Collision
+  LDY #$03      ; Get Sprite 2 Y Data
+  LDA (TEMP),Y
+  STA ENEMY_Y      ; Sprite 2 Y Lo
+  ; Compare Bounding Boxes of Sprite 1 and Sprite 2 Vertically
+  LDA SPRITE_Y    ; Sprite 1 Y location compared to Sprite 2 Y
+  CMP ENEMY_Y
+  BCS @bottom
+@top:          ; Check Sprite 1 Bot Y < Sprite 2 Top Y
+  LDA ENEMY_Y
+  SEC
+  SBC SPRITE_Y
+  CMP #$10      ; Y Bounding Box Size of Sprite 1
+  BCS @exit      ; Possible Collision?
+  JMP @x
+@bottom:        ; Check Sprite 1 Top Y > Sprite 2 Bot Y
+  LDA SPRITE_Y
+  SEC
+  SBC ENEMY_Y
+  CMP #$10      ; Y Bounding Box Size of Sprite 2
+  BCS @exit      ; Possible Collision?
+@x:          ; Check for X Non-Collision
+  LDY #$05      ; Get Sprite 2 X Data
+  LDA (TEMP),Y
+  STA ENEMY_X_LO    ; Sprite 2 X Lo
+  INY
+  LDA (TEMP),Y
+  STA ENEMY_X_HI    ; Sprite 2 X Hi
 ; Compare Bounding Boxes of Sprite 1 and Sprite 2 Horizontally
-	LDA SPRITE_X_LO		; Sprite 1 X Location compared to Sprite 2 X
-	CMP ENEMY_X_LO
-	LDA SPRITE_X_HI
-	SBC ENEMY_X_HI
-	BCS @right
-@left:				; Check Sprite 1 Right X < Sprite 2 Left X
-	LDA ENEMY_X_LO
-	SEC
-	SBC SPRITE_X_LO
-	STA DISTANCE+0
-	LDA ENEMY_X_HI
-	SBC SPRITE_X_HI
-	STA DISTANCE+1
-	LDA DISTANCE+0
-	CMP #<$0010			; X Bounding Box Lo Size of Sprite 1
-	LDA DISTANCE+1
-	SBC #>$0010			; X Bounding Box Hi Size of Sprite 1
-	BCS @exit			; Collision?
-	; Do Collision on Sprite 1 Right Side/Sprite 2 Left Side Code Here
-	JMP @exit
-@right:				; Check Sprite 1 Left X > Sprite 2 Right X
-	LDA SPRITE_X_LO
-	SEC
-	SBC ENEMY_X_LO
-	STA DISTANCE+0
-	LDA SPRITE_X_HI
-	SBC ENEMY_X_HI
-	STA DISTANCE+1
-	LDA DISTANCE+0
-	CMP #<$0010			; X Bounding Box Lo Size of Sprite 2
-	LDA DISTANCE+1
-	SBC #>$0010			; X Bounding Box Hi Size of Sprite 2
-	BCS @exit			; Collision?
-	; Do Collision on Sprite 1 Left Side/Sprite 2 Right Side Code Here
+  LDA SPRITE_X_LO    ; Sprite 1 X Location compared to Sprite 2 X
+  CMP ENEMY_X_LO
+  LDA SPRITE_X_HI
+  SBC ENEMY_X_HI
+  BCS @right
+@left:        ; Check Sprite 1 Right X < Sprite 2 Left X
+  LDA ENEMY_X_LO
+  SEC
+  SBC SPRITE_X_LO
+  STA DISTANCE+0
+  LDA ENEMY_X_HI
+  SBC SPRITE_X_HI
+  STA DISTANCE+1
+  LDA DISTANCE+0
+  CMP #<$0010      ; X Bounding Box Lo Size of Sprite 1
+  LDA DISTANCE+1
+  SBC #>$0010      ; X Bounding Box Hi Size of Sprite 1
+  BCS @exit      ; Collision?
+  ; Do Collision on Sprite 1 Right Side/Sprite 2 Left Side Code Here
+  JMP @exit
+@right:        ; Check Sprite 1 Left X > Sprite 2 Right X
+  LDA SPRITE_X_LO
+  SEC
+  SBC ENEMY_X_LO
+  STA DISTANCE+0
+  LDA SPRITE_X_HI
+  SBC ENEMY_X_HI
+  STA DISTANCE+1
+  LDA DISTANCE+0
+  CMP #<$0010      ; X Bounding Box Lo Size of Sprite 2
+  LDA DISTANCE+1
+  SBC #>$0010      ; X Bounding Box Hi Size of Sprite 2
+  BCS @exit      ; Collision?
+  ; Do Collision on Sprite 1 Left Side/Sprite 2 Right Side Code Here
 @exit:
-	RTS
+  RTS
 ```
 
 ## Background Collisions
@@ -165,137 +165,137 @@ The following code is finding a collision on the left or right side of a sprites
 
 ```nasm
 x_bg_collision:
-	LDA SPRITE_Y		; Store Sprite Height Top
-	AND #%11111000
-	STA TEMP+2
-	LDA SPRITE_Y		; (Bottom Y - Top Y) / 8 + 1 = Tile Rows
-	CLC
-	ADC SPRITE_HEIGHT
-	SEC
-	SBC TEMP+2
-	LSR
-	LSR
-	LSR
-	STA TEMP+2
-	INC TEMP+2	
-	LDY SPRITE_Y		; Check for in Status Bar
+  LDA SPRITE_Y    ; Store Sprite Height Top
+  AND #%11111000
+  STA TEMP+2
+  LDA SPRITE_Y    ; (Bottom Y - Top Y) / 8 + 1 = Tile Rows
+  CLC
+  ADC SPRITE_HEIGHT
+  SEC
+  SBC TEMP+2
+  LSR
+  LSR
+  LSR
+  STA TEMP+2
+  INC TEMP+2  
+  LDY SPRITE_Y    ; Check for in Status Bar
 @lower:
-	CPY #$20
-	BCS @check
-	DEC TEMP+2
-	BEQ @exit
-	LDA SPRITE_Y		; Check for Sprites under Status Bar
-	CLC
-	ADC #$08
-	TAY
-	JMP @lower
+  CPY #$20
+  BCS @check
+  DEC TEMP+2
+  BEQ @exit
+  LDA SPRITE_Y    ; Check for Sprites under Status Bar
+  CLC
+  ADC #$08
+  TAY
+  JMP @lower
 @check:
-	LDA SPRITE_X_DELTA+1	; Left or Right Direction?
-	BPL @right
+  LDA SPRITE_X_DELTA+1  ; Left or Right Direction?
+  BPL @right
 @left:
-	JSR get_bg_tile_left	; Get Left Movement Source
-	LDY #$00
+  JSR get_bg_tile_left  ; Get Left Movement Source
+  LDY #$00
 @nextleft:
-	LDA (SOURCE),Y		; Get Tile #
-	TAX
-	LDA bg_table,X		; Get Tile Info
-	CMP #$01			; Solid Tile?
-	BNE @emptyleft
-	; Do Sprite Left Background Collision Code Here
-	JMP @exit
+  LDA (SOURCE),Y    ; Get Tile #
+  TAX
+  LDA bg_table,X    ; Get Tile Info
+  CMP #$01      ; Solid Tile?
+  BNE @emptyleft
+  ; Do Sprite Left Background Collision Code Here
+  JMP @exit
 @emptyleft:
-	INY				; Set to Next Tile Down
-	CPY TEMP+2			; Last Tile?
-	BNE @nextleft
-	JMP @exit
+  INY        ; Set to Next Tile Down
+  CPY TEMP+2      ; Last Tile?
+  BNE @nextleft
+  JMP @exit
 @right:
-	JSR get_bg_tile_right	; Get Right Movement Source
-	LDY #$00
+  JSR get_bg_tile_right  ; Get Right Movement Source
+  LDY #$00
 @nextright:
-	LDA (SOURCE),Y		; Get Tile #
-	TAX
-	LDA bg_table,X		; Get Tile Info
-	CMP #$01			; Solid Tile?
-	BNE @emptyright
-	; Do Sprite Right Background Collision Code Here
-	JMP @exit
+  LDA (SOURCE),Y    ; Get Tile #
+  TAX
+  LDA bg_table,X    ; Get Tile Info
+  CMP #$01      ; Solid Tile?
+  BNE @emptyright
+  ; Do Sprite Right Background Collision Code Here
+  JMP @exit
 @emptyright:
-	INY				; Set to Next Tile Down
-	CPY TEMP+2			; Last Tile?
-	BNE @nextright
+  INY        ; Set to Next Tile Down
+  CPY TEMP+2      ; Last Tile?
+  BNE @nextright
 @exit:
-	RTS
+  RTS
 
-get_bg_tile_left:			; Sprite Left Bound
-	; Get X Left Bound
-	LDA SPRITE_X_LO
-	STA SOURCE+0
-	LDA SPRITE_X_HI
-	STA SOURCE+1
-	JMP get_bg_tile
-get_bg_tile_right:		; Sprite Right Bound
-	; Get X Right Bound
-	LDA SPRITE_X_LO
-	CLC
-	ADC #<$0010			; Sprite Bound Width Lo
-	STA SOURCE+0
-	LDA SPRITE_X_HI
-	ADC #>$0010			; Sprite Bound Width Hi
-	STA SOURCE+1
+get_bg_tile_left:      ; Sprite Left Bound
+  ; Get X Left Bound
+  LDA SPRITE_X_LO
+  STA SOURCE+0
+  LDA SPRITE_X_HI
+  STA SOURCE+1
+  JMP get_bg_tile
+get_bg_tile_right:    ; Sprite Right Bound
+  ; Get X Right Bound
+  LDA SPRITE_X_LO
+  CLC
+  ADC #<$0010      ; Sprite Bound Width Lo
+  STA SOURCE+0
+  LDA SPRITE_X_HI
+  ADC #>$0010      ; Sprite Bound Width Hi
+  STA SOURCE+1
 get_bg_tile:
-	; Get X Source Index
-	LSR SOURCE+1		; X / 8 = Column
-	ROR SOURCE+0
-	LSR SOURCE+1
-	ROR SOURCE+0
-	LSR SOURCE+1
-	ROR SOURCE+0
-	ASL SOURCE+0		; (Column * 32) - (Column * 6) = Source Index
-	ROL SOURCE+1
-	LDA SOURCE+0
-	STA TEMP+0
-	LDA SOURCE+1
-	STA TEMP+1
-	ASL SOURCE+0
-	ROL SOURCE+1
-	ASL SOURCE+0
-	ROL SOURCE+1
-	ASL SOURCE+0
-	ROL SOURCE+1
-	ASL SOURCE+0
-	ROL SOURCE+1
-	LDX #$03
+  ; Get X Source Index
+  LSR SOURCE+1    ; X / 8 = Column
+  ROR SOURCE+0
+  LSR SOURCE+1
+  ROR SOURCE+0
+  LSR SOURCE+1
+  ROR SOURCE+0
+  ASL SOURCE+0    ; (Column * 32) - (Column * 6) = Source Index
+  ROL SOURCE+1
+  LDA SOURCE+0
+  STA TEMP+0
+  LDA SOURCE+1
+  STA TEMP+1
+  ASL SOURCE+0
+  ROL SOURCE+1
+  ASL SOURCE+0
+  ROL SOURCE+1
+  ASL SOURCE+0
+  ROL SOURCE+1
+  ASL SOURCE+0
+  ROL SOURCE+1
+  LDX #$03
 @loop:
-	LDA SOURCE+0
-	SEC
-	SBC TEMP+0
-	STA SOURCE+0
-	LDA SOURCE+1
-	SBC TEMP+1
-	STA SOURCE+1
-	DEX
-	BNE @loop
-	; Get X Source Address
-	LDA SOURCE+0		; X Source Index + Source = X Source Address
-	CLC
-	ADC #<title_name_table
-	STA SOURCE+0
-	LDA SOURCE+1
-	ADC #>title_name_table
-	STA SOURCE+1
-	; Get Y Source Index
-	TYA				; Y / 8 = Row
-	LSR
-	LSR
-	LSR
-	SEC				; Row - Status Bar Rows = Y Source Index
-	SBC #$04
-	; Get Source Address
-	CLC				; Y Source Index + X Source Address = Source Address
-	ADC SOURCE+0
-	STA SOURCE+0
-	LDA #$00
-	ADC SOURCE+1
-	STA SOURCE+1
-	RTS
+  LDA SOURCE+0
+  SEC
+  SBC TEMP+0
+  STA SOURCE+0
+  LDA SOURCE+1
+  SBC TEMP+1
+  STA SOURCE+1
+  DEX
+  BNE @loop
+  ; Get X Source Address
+  LDA SOURCE+0    ; X Source Index + Source = X Source Address
+  CLC
+  ADC #<title_name_table
+  STA SOURCE+0
+  LDA SOURCE+1
+  ADC #>title_name_table
+  STA SOURCE+1
+  ; Get Y Source Index
+  TYA        ; Y / 8 = Row
+  LSR
+  LSR
+  LSR
+  SEC        ; Row - Status Bar Rows = Y Source Index
+  SBC #$04
+  ; Get Source Address
+  CLC        ; Y Source Index + X Source Address = Source Address
+  ADC SOURCE+0
+  STA SOURCE+0
+  LDA #$00
+  ADC SOURCE+1
+  STA SOURCE+1
+  RTS
 ```

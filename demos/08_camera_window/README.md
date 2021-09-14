@@ -16,63 +16,63 @@ The scroll movement in the game loop will change to handle the window instead of
 
 ```nasm
 move:
-	LDA SPRITE_X_LO	; Get Main Object Location
-	SEC
-	SBC XSCROLL+0
-	TAY
-	LDA SPRITE_X_HI
-	SBC XSCROLL+1
-	BMI @leftmax	; Past Left of Screen
-	BNE @rightmax	; Past Right of Screen
-	TYA			; Hit Left Window?
-	SEC
-	SBC #$62
-	BCC @lefttrap
-	TYA			; Hit Right Window?
-	SEC
-	SBC #$82
-	BCC @exit
+  LDA SPRITE_X_LO  ; Get Main Object Location
+  SEC
+  SBC XSCROLL+0
+  TAY
+  LDA SPRITE_X_HI
+  SBC XSCROLL+1
+  BMI @leftmax  ; Past Left of Screen
+  BNE @rightmax  ; Past Right of Screen
+  TYA      ; Hit Left Window?
+  SEC
+  SBC #$62
+  BCC @lefttrap
+  TYA      ; Hit Right Window?
+  SEC
+  SBC #$82
+  BCC @exit
 @righttrap:
-	CMP #$04		; Scroll Speed Right
-	BCC @right
+  CMP #$04    ; Scroll Speed Right
+  BCC @right
 @rightmax:
-	LDA #$04		; Set Max Scroll Speed
+  LDA #$04    ; Set Max Scroll Speed
 @right:
-	TAX
-	LDA XSCROLL+0	; Max Scroll Right?
-	CMP #<$02FF
-	LDA XSCROLL+1
-	SBC #>$02FF
-	BCS @exit
-	TXA
-	STA X_DIRECTION	; Change Scroll by Speed
-	CLC
-	ADC XSCROLL+0
-	STA XSCROLL+0
-	LDA XSCROLL+1
-	ADC #$00
-	STA XSCROLL+1
-	RTS
+  TAX
+  LDA XSCROLL+0  ; Max Scroll Right?
+  CMP #<$02FF
+  LDA XSCROLL+1
+  SBC #>$02FF
+  BCS @exit
+  TXA
+  STA X_DIRECTION  ; Change Scroll by Speed
+  CLC
+  ADC XSCROLL+0
+  STA XSCROLL+0
+  LDA XSCROLL+1
+  ADC #$00
+  STA XSCROLL+1
+  RTS
 @lefttrap:
-	CMP #$FC		; Scroll Speed Left
-	BCS @left
+  CMP #$FC    ; Scroll Speed Left
+  BCS @left
 @leftmax:
-	LDA #$FC		; Set Max Scroll Speed
+  LDA #$FC    ; Set Max Scroll Speed
 @left:
-	TAX
-	LDA XSCROLL+0	; Max Scroll Left?
-	CMP #<$0003
-	LDA XSCROLL+1
-	SBC #>$0003
-	BCC @exit
-	TXA
-	STA X_DIRECTION	; Change Scroll by Speed
-	CLC
-	ADC XSCROLL+0
-	STA XSCROLL+0
-	LDA XSCROLL+1
-	SBC #$00
-	STA XSCROLL+1
+  TAX
+  LDA XSCROLL+0  ; Max Scroll Left?
+  CMP #<$0003
+  LDA XSCROLL+1
+  SBC #>$0003
+  BCC @exit
+  TXA
+  STA X_DIRECTION  ; Change Scroll by Speed
+  CLC
+  ADC XSCROLL+0
+  STA XSCROLL+0
+  LDA XSCROLL+1
+  SBC #$00
+  STA XSCROLL+1
 @exit:
-	RTS
+  RTS
 ```
