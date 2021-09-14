@@ -6,7 +6,7 @@ The standard NES controller has a directional pad with Select, Start, A, and B b
 
 Strobing allows the NES to load the current state of the buttons into a shift register then disabling the reloading of the shift register so we can read the state of the buttons.  We do this by writing 1 then 0 to $4016 (this strobes both controller 1 and 2).
 
-```lisp
+```nasm
    LDA #$01   ; Reload Shift Register
   STA $4016
    LDA #$00   ; Disable Reload Shift Register
@@ -43,7 +43,7 @@ When the APU (Audio Processing Unit) runs a DMC DMA cycle at the same time as a 
 
 The controller reads should be updated in either the game loop or in NMI.  In the game loop guarantees the same buttons exist for all checks but reads occur less often.  In the NMI guarantees consistent reading but buttons may change during checks in the game loop.  
 
-```lisp
+```nasm
 update_joypad:
    ; Joypad Strobing
    LDA #$01

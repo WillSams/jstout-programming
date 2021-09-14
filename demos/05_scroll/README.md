@@ -4,7 +4,7 @@ The $2000 Register sets the name table to be displayed.
 
 The $2005 Register sets the scroll.  The first write sets the left/right value and the second write sets the up/down value.  For example:
 
-```lisp
+```nasm
 LDA SOFT_2000	; Get $2000 Settings
 AND #%11111100	; Remove Name Table
 ORA NAME_TABLE	; Add Name Table
@@ -23,7 +23,7 @@ The process for scrolling left/right or up/down is the same but on a different a
 
 In the Reset Routine, we need to load the initial screen and set the initial screen location (in 16-bits).
 
-```lisp
+```nasm
 load_name_table:
 	LDA #$21			; Set Number of Columns to Draw
 	STA DRAW_WIDTH
@@ -207,7 +207,7 @@ title_attribute_table:
 
 In the NMI, we need to update the scroll.
 
-```lisp
+```nasm
 update_scroll:
 	LDA SOFT_2000		; Get $2000 Settings
 	AND #%11111100		; Remove Name Table
@@ -232,7 +232,7 @@ Now we have loaded the initial name table (the red box) and one column in the ne
 
 In the Game Loop, we need to calculate the scrolling and buffer new columns and attributes.
 
-```lisp
+```nasm
 scroll_check:
 	LDA #$00			; Clear Direction
 	STA X_DIRECTION
@@ -289,7 +289,7 @@ move:
 
 After we have moved 8 pixels, we need to draw a new column.
 
-```lisp
+```nasm
 column_check:
 	LDA XSCROLL+0		; Moved 8 pixels?
 	AND #%0000111
@@ -356,7 +356,7 @@ Now the scroll has moved 8 pixels right in the name table (the red box) and the 
 
 After we have moved 32 pixels, we need to draw a new attribute.
 
-```lisp
+```nasm
 attribute_check:
 	LDA XSCROLL+0		; Moved 32 pixels?
 	AND #%00011111

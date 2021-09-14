@@ -4,7 +4,7 @@
 
 ### 8-bit with 8-bit Result
 
-```lisp
+```nasm
 	LDA VALUE_A+0
 	CLC
 	ADC VALUE_B+0
@@ -13,7 +13,7 @@
 
 ### 8-bit with 16-bit Result
 
-```lisp
+```nasm
 	LDA VALUE_A+0
 	CLC
 	ADC VALUE_B+0
@@ -25,7 +25,7 @@
 
 ### 16-bit with 16-bit Result
 
-```lisp
+```nasm
 	LDA VALUE_A+0
 	CLC
 	ADC VALUE_B+0
@@ -37,7 +37,7 @@
 
 ### 16-bit with 24-bit Result
 
-```lisp
+```nasm
 	LDA VALUE_A+0
 	CLC
 	ADC VALUE_B+0
@@ -54,7 +54,7 @@
 
 ### 8-bit with 8-bit Result
 
-```lisp
+```nasm
 	LDA VALUE_A+0
 	SEC
 	SBC VALUE_B+0
@@ -63,7 +63,7 @@
 
 ### 16-bit with 16-bit Result
 
-```lisp
+```nasm
 	LDA VALUE_A+0
 	SEC
 	SBC VALUE_B+0
@@ -77,7 +77,7 @@
 
 ### 8-bit with 8-bit Result
 
-```lisp
+```nasm
 	LDA #$00
 	STA RESULT+0
 	LDX #$08
@@ -98,7 +98,7 @@
 
 ### 8-bit with 16-bit Result
 
-```lisp
+```nasm
 	LDA #$00
 	STA RESULT+0
 	STA RESULT+1
@@ -124,7 +124,7 @@
 
 ### 16-bit with 16-bit Result
 
-```lisp
+```nasm
 	LDA #$00
 	STA RESULT+0
 	STA RESULT+1
@@ -150,7 +150,7 @@
 
 ### 16-bit with 32-bit Result
 
-```lisp
+```nasm
 	LDA #$00
 	STA RESULT+0
 	STA RESULT+1
@@ -189,7 +189,7 @@ STA RESULT+3
 
 ### 8-bit with 8-bit Result and Remainder
 
-```lisp
+```nasm
 	LDA #$00
 	STA REMAINDER+0
 	LDX #$08
@@ -211,7 +211,7 @@ STA RESULT+3
 
 ### 16-bit with 16-bit Result and Remainder
 
-```lisp
+```nasm
 	LDA #$00
 	STA REMAINDER+0
 	STA REMAINDER+1
@@ -243,13 +243,13 @@ STA RESULT+3
 
 ### 8-bit with 8-bit Result
 
-```lisp
+```nasm
 ASL VALUE_A+0
 ```
 
 ### 8-bit with 16-bit Result
 
-```lisp
+```nasm
 	LDA #$00
 	STA VALUE_A+1
 	ASL VALUE_A+0
@@ -258,14 +258,14 @@ ASL VALUE_A+0
 
 ### 16-bit with 16-bit Result
 
-```lisp
+```nasm
 	ASL VALUE_A+0
 	ROL VALUE_A+1
 ```
 
 ### 16-bit with 24-bit Result
 
-```lisp
+```nasm
 	LDA #$00
 	STA VALUE_A+2
 	ASL VALUE_A+0
@@ -277,7 +277,7 @@ ASL VALUE_A+0
 
 ## 8-bit with 8-bit Result
 
-```lisp
+```nasm
 	LDA #$00
 	STA REMAINDER+0
 	LSR VALUE_A+0
@@ -286,7 +286,7 @@ ASL VALUE_A+0
 
 ## 16-bit with 16-bit Result
 
-```lisp
+```nasm
 	LDA #$00
 	STA REMAINDER+0
 	ROR VALUE_A+1
@@ -298,7 +298,7 @@ ASL VALUE_A+0
 
 #### 8-bit with 8-bit Result
 
-```lisp
+```nasm
 LDA #$00
 SEC
 SBC VALUE_A+0
@@ -307,7 +307,7 @@ STA RESULT+0
 
 ### 16-bit with 16-bit Result
 
-```lisp
+```nasm
 LDA #$00
 SEC
 SBC VALUE_A+0
@@ -320,13 +320,13 @@ Increment: ; VALUE_A + 1 = VALUE_A
 
 ### 8-bit with 8-bit Result
 
-```lisp
+```nasm
 INC VALUE_A+0
 ```
 
 ### 16-bit with 16-bit Result
 
-```lisp
+```nasm
 	INC VALUE_A+0
 	BNE @done
 	INC VALUE_A+1
@@ -337,13 +337,13 @@ INC VALUE_A+0
 
 ### 8-bit with 8-bit Result
 
-```lisp
+```nasm
 DEC VALUE_A+0
 ```
 
 ### 16-bit with 16-bit Result
 
-```lisp
+```nasm
 	LDA VALUE_A+0
 	BNE @done
 	DEC VALUE_A+1
@@ -355,14 +355,14 @@ DEC VALUE_A+0
 
 ### 8-bit Unsigned
 
-```lisp
+```nasm
 	LDA VALUE_A+0
 	CMP VALUE_B+0
 ```
 
 ### 16-bit Unsigned
 
-```lisp
+```nasm
 LDA VALUE_A+0
 CMP VALUE_B+0
 LDA VALUE_A+1
@@ -371,7 +371,7 @@ SBC VALUE_B+1
 
 ### 8-bit Signed
 
-```lisp
+```nasm
 	LDA VALUE_A+0
 	CMP VALUE_B+0
 	BEQ @done
@@ -385,7 +385,7 @@ EOR #$80
 
 ### 16-bit Signed
 
-```lisp
+```nasm
 LDA VALUE_A+0
 CMP VALUE_B+0
 BNE @notequal

@@ -8,7 +8,7 @@
 
 ## Example
 
-```lisp
+```nasm
 LDA #$02; Memory Page 2 * $100 = RAM Address $200
 STA $4014; OAM DMA will copy $200-$2FF in RAM into OAM
 ```
@@ -45,7 +45,7 @@ Byte 4 = X Position
 
 In the reset routine we need to set all the sprites off the screen and write the sprites for the initial screen.
 
-```lisp
+```nasm
 load_title_sprites:
   LDX #<title_sprites    ;Source Lo Byte
   LDY #>title_sprites    ;Source Hi Byte
@@ -89,7 +89,7 @@ In the Game Loop, we want to calculate all the sprite changes and store them in 
 
 In the NMI, we want to update the OAM with our OAM Buffer.
 
-```lisp
+```nasm
 update_oam:
   LDA #$00      ; Set to first byte in OAM
   STA $2003

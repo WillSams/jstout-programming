@@ -4,7 +4,7 @@ To animate a sprite, we need to change the sprite tile over a period of time to 
 
 The Game Loop should set the sprite or metasprite (multiple sprites set near each other to form what looks like one bigger object) to update, update the changes, and then move to the next sprite or metasprite.  After we calculate the sprite and scrolling changes, we need to write the new sprite to the OAM Buffer.  If the amount of sprites used is variable then we should also clear the OAM Buffer before writing the new sprite data into the OAM Buffer.
 
-```lisp
+```nasm
 animation:
 	LDA SPRITE_ANIMATION	; Get Animation Pointer
 	ASL

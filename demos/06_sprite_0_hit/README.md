@@ -4,7 +4,7 @@ The first object in the OAM is known as sprite #0 which has a special function. 
 
 We detect the sprite #0 hit by:
 
-```lisp
+```nasm
 @hit:
 	BIT $2002			; Wait Until Sprite #0 Not Hit
 	BVS @hit
@@ -23,7 +23,7 @@ Note: the delay value will vary based on the location of the sprite and the spec
 
 In the Reset routine or Game Loop, we need to write the status bar to both name tables.
 
-```lisp
+```nasm
 load_status_bar:
 	LDA #$02
 	STA TEMP+2
@@ -66,7 +66,7 @@ status_bar_end:
 
 In the NMI, we need to set the name table with the status bar with no scrolling and we need to update the scroll once rendering is on after the sprite #0 hit.
 
-```lisp
+```nasm
 	; Store Values
 	PHA				; Push A
 	TXA				; Push X
@@ -139,7 +139,7 @@ update_scroll:
 
 In our code to load and draw the columns, we need to start drawing under the status bar to prevent drawing over it.
 
-```lisp
+```nasm
 load_name_table:
 	LDA #$21			; Set Columns to Draw
 	STA DRAW_WIDTH

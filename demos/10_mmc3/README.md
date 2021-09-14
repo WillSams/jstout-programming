@@ -132,7 +132,7 @@ xxx = Fine Horizontal Scroll        yyy = Fine Vertical Scroll
 +--- Scroll Right 4 Pixels          +--- Scroll Down 4 Pixels
 ```
 
-```lisp
+```nasm
 	; DO BEFORE HBLANK
 	LDA XSCROLL+1	; Get Horizontal Name Table
 	LSR

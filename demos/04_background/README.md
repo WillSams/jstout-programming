@@ -6,7 +6,7 @@
 - The $2006 Register sets the address in VRAM to write to and the $2007 Register writes the data to the VRAM.
 - Example:
 
-```lisp
+```nasm
 LDA #$20        ; VRAM Address Hi Byte
 STA $2006       ; Store VRAM Address Hi Byte
 LDA #$00        ; VRAM Address Lo Byte
@@ -68,7 +68,7 @@ At the bottom of the screen we see the palettes and examples of the 2x2 tile col
 
 In the reset routine we need to clear the name and attribute tables and write the background for the initial screen during forced blank.
 
-```lisp
+```nasm
 clear_vram:
 	LDA SOFT_2000      ; Get $2000 Register Settings
 	AND #%11111011      ; Set VRAM Increment to Across
@@ -94,7 +94,7 @@ Reset/Forced Blank:
 
 In forced blank, we can write directly to VRAM for as long as we need.
 
-```lisp
+```nasm
 load_title_vram:
 	LDX #<title_vram	      ; Source Lo Byte
 	LDY #>title_vram	      ; Source Hi Byte
@@ -157,7 +157,7 @@ Byte 3:  VRAM Address Hi Byte
 Byte 4+: Data
 ```
 
-```lisp
+```nasm
 buffer_vram:
 	STX TEMP+0		      ; Store VRAM Address Lo
 	STY TEMP+1		      ; Store VRAM Address Hi
@@ -212,7 +212,7 @@ buffer_vram:
 
 In the NMI, we want to update the Name and Attribute Tables with our buffer.
 
-```lisp
+```nasm
 update_vram:
 	LDA #$00		      ; Set to Clear
 	LDX BUFFER_LENGTH	      ; Get Buffer Length

@@ -14,7 +14,7 @@ A sports game like Tecmo Super Bowl has a wide horizontal window snapped onto th
 
 The scroll movement in the game loop will change to handle the window instead of moving with the controller.
 
-```lisp
+```nasm
 move:
 	LDA SPRITE_X_LO	; Get Main Object Location
 	SEC

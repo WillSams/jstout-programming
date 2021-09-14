@@ -4,7 +4,7 @@
 
 The reset routine is set by the Reset Vector and is run at power on or at reset.  We need to clear the settings, wait for the PPU to warm-up (wait about 29658 cycles before we can write to VRAM), clear any RAM, and create the initial screen before entering the main game loop.
 
-```lisp
+```nasm
 Reset:
 CLD       ; Clear Decimal Mode (NES has no BCD)
 SEI       ; Disable IRQs
@@ -106,7 +106,7 @@ init_graphics:
 
 The NMI routine is set by the NMI Vector and is run when NMIs are enabled at the beginning of each vertical blank.  Vertical Blank is the time just before rendering the screen when the PPU’s VRAM may be accessed.  We want to update the PPU and perform all tasks needed each frame here.
 
-```lisp
+```nasm
 NMI:
   ; Store Values
   PHA       ; Push A
@@ -168,7 +168,7 @@ IRQ:  RTI
 
 The Vectors are the pointers to the NMI, Reset, and IRQ routines.
 
-```lisp
+```nasm
 .segment "VECTORS"
   .WORD NMI, Reset, IRQ
 ```

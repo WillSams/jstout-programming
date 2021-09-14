@@ -79,7 +79,7 @@ We can also check more than one bounding box on a sprite/metasprite.  This metho
 
 The following code is finding a collision on the left or right side of two bounding boxes.  To find the collision on the top or bottom then we would do the same process with a check of the x direction first then the y.
 
-```lisp
+```nasm
 x_sprite_collision:
 	LDA ENEMY			; Get Sprite 2 Data Location
 	ASL
@@ -163,7 +163,7 @@ Most platformers like Super Mario Bros. store a background collision map in RAM 
 
 The following code is finding a collision on the left or right side of a sprites bounding box for solid objects using the ROM tilemap.  To find the collision on the top or bottom then we would do the same process with a check of the top and bottom bounds.
 
-```lisp
+```nasm
 x_bg_collision:
 	LDA SPRITE_Y		; Store Sprite Height Top
 	AND #%11111000
