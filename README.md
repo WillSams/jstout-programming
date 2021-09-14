@@ -1,6 +1,6 @@
 # JStout's NES Programming Notes
 
-The purpose of this repository is to have a place to reference [jstout's excellent notes][1].  Outside of structuring this repository and make slight changes, I've added nothing here.
+The purpose of this repository is to have a place to reference [jstout's excellent notes][1].  Outside of structuring this repository and slight changes made, I've added nothing here.
 
 This is still a work-in-progress as I will eventually get around to replacing the current sprites with new assets for CHRs generated with the help of [NES Screen Tool][2].
 
