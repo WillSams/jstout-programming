@@ -5,6 +5,10 @@ BIN	= $(ROM).nes
 
 AS	= ca65
 LD	= ld65 
+DA  = da65
+
+extract = ./../../tools/nesextract
+radare2 = ./../../tools/rasm2
 
 LDFLAGS = -C nes.cfg -m $(ROM).map
 OBJDUMP = od65
@@ -25,8 +29,9 @@ $(BIN): $(OBJS)
 	$(AS) $< -o $@
 
 disassemble:
-	da65 --cpu 6502 --start-addr '$$8000' PRG.prg >| program.s
-	rasm2 -a 6502 -D -B -o 32752 -f $(BIN) >| disassembly
+	$(extract) $(BIN)  
+	$(DA) --cpu 6502 --start-addr '$$8000' PRG.prg >| program.s
+	${radare2} -a 6502 -D -B -o 32752 -f $(BIN) >| disassembly 
 
 dump: 
 	$(OBJDUMP) --dump-all $(OBJS) > $(ROM).dump
