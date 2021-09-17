@@ -12,7 +12,7 @@ I use the assembler/linker provided by the [cc65 compiler][3], [Mesen][6] for de
 sudo apt install cc65 build-essential
 ```
 
-Each demo will have to be compiled individually.  Just execute `make` within the directory of the demo's corresponding make file.
+Each demo will have to be compiled individually.  Just execute `make` within the directory of the demo's corresponding make file.  Alternatively for debugging, the Linux version of [FCEUX][8] can be used as well.  If on Debian, download the version from their website instead of using the very old version provided by your package manager.
 
 ## Editing
 
@@ -37,3 +37,4 @@ source ~/.bashrc
 [5]: https://github.com/tlgkccampbell/code-ca65
 [6]: https://mesen.ca/
 [7]: https://github.com/WillSams/Nes-Extract
+[8]: https://ci.appveyor.com/api/projects/zeromus/fceux/artifacts/fceux-2.4.0-amd64.deb?branch=master&job=Ubuntu
