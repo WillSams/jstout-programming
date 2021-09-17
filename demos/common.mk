@@ -24,6 +24,10 @@ $(BIN): $(OBJS)
 %.o: %.s 
 	$(AS) $< -o $@
 
+disassemble:
+	da65 --cpu 6502 --start-addr '$$8000' PRG.prg >| program.s
+	rasm2 -a 6502 -D -B -o 32752 -f $(BIN) >| disassembly
+
 dump: 
 	$(OBJDUMP) --dump-all $(OBJS) > $(ROM).dump
 

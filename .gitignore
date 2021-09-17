@@ -6,7 +6,6 @@
 *.ko
 *.obj
 *.elf
-*.bin
 
 # Linker output
 *.ilk
@@ -51,4 +50,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+**/**/*.dump
+**/**/disassembly
 
