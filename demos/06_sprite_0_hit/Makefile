@@ -1,3 +1,3 @@
-ROM = sprite0_demo
+NAME = sprite0_demo
 
 include ../common.mk

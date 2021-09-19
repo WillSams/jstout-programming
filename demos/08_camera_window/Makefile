@@ -1,3 +1,3 @@
-ROM = window_demo
+NAME = window_demo
 
 include ../common.mk

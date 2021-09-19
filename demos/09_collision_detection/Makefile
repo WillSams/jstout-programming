@@ -1,3 +1,3 @@
-ROM = collision_demo
+NAME = collision_demo
 
 include ../common.mk

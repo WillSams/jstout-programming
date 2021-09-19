@@ -1,3 +1,3 @@
-ROM = palette_demo
+NAME = palette_demo
 
 include ../common.mk

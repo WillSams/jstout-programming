@@ -156,11 +156,13 @@ update_scroll: ; EXPLAINED IN FUTURE
   LDA YSCROLL     ; Set Horizontal Scroll Offset
   STA $2005
   RTS
+```
 
-IRQ Routine:
+## IRQ Routine
 
 The IRQ routine is set by the IRQ/BRK Vector and handles interrupt requests.  Generally IRQs are used to create screen effects.
 
+```nasm
 IRQ:  RTI
 ```
 

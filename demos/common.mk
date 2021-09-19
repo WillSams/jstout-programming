@@ -1,7 +1,7 @@
 #!/bin/sh
 
 
-BIN	= $(ROM).nes
+BIN	= $(NAME).nes
 
 AS	= ca65
 LD	= ld65 
@@ -10,7 +10,7 @@ DA  = da65
 extract = ./../../tools/nesextract
 radare2 = ./../../tools/rasm2
 
-LDFLAGS = -C nes.cfg -m $(ROM).map
+LDFLAGS = -C nes.cfg -m $(NAME).map
 OBJDUMP = od65
 DEBUGGER = fceux
 
@@ -20,13 +20,11 @@ OBJS=$(SS:.s=.o)
 all:	$(BIN)
 
 clean:
-	rm -f $(BIN) && rm -f $(shell find . -name '*.o')  && rm -f *.map && rm -f *.dump
+	rm -f $(BIN) $(shell find . -name '*.o')
+	rm -f *.map *.dump disassembly
 
 $(BIN): $(OBJS)
-	$(LD) $(LDFLAGS) $< -o $@ 
-
-%.o: %.s 
-	$(AS) $< -o $@
+	$(LD) -o $(BIN) $(LDFLAGS) $^ 
 
 disassemble:
 	$(extract) $(BIN)  
@@ -34,7 +32,7 @@ disassemble:
 	${radare2} -a 6502 -D -B -o 32752 -f $(BIN) >| disassembly 
 
 dump: 
-	$(OBJDUMP) --dump-all $(OBJS) > $(ROM).dump
+	$(OBJDUMP) --dump-all $(OBJS) > $(NAME).dump
 
 run:
 	$(DEBUGGER) ./$(BIN)

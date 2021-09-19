@@ -1,3 +1,3 @@
-ROM = scroll_demo
+NAME = scroll_demo
 
 include ../common.mk

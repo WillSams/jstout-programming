@@ -1,3 +1,3 @@
-ROM = controller_demo
+NAME = controller_demo
 
 include ../common.mk

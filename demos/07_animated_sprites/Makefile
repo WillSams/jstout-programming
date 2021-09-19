@@ -1,3 +1,3 @@
-ROM = animated_demo
+NAME = animated_demo
 
 include ../common.mk

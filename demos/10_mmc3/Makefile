@@ -1,3 +1,3 @@
-ROM = mmc3_demo
+NAME = mmc3_demo
 
 include ../common.mk

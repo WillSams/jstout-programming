@@ -1,3 +1,3 @@
-ROM = background_demo
+NAME = background_demo
 
 include ../common.mk
