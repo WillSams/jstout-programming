@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 BIN	= $(NAME).nes
 
 AS	= ca65
